@@ -2,1749 +2,1370 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>WalkerBay POS Pro - Enterprise Edition</title>
-    
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- Font Awesome -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WalkerBay POS System</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Mono&display=swap" rel="stylesheet">
-
-    <!-- Chart.js for Analytics -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        deepBlue: '#0a192f',
-                        oceanBlue: '#1a3a5f',
-                        softWhite: '#f8f9fa',
-                        accentGold: '#d4af37',
-                        success: '#10b981',
-                        warning: '#f59e0b',
-                        danger: '#ef4444',
-                        darkGray: '#1e293b'
-                    },
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                        mono: ['Space Mono', 'monospace'],
-                    },
-                    animation: {
-                        'spin-slow': 'spin 4s linear infinite'
-                    }
-                }
-            }
-        }
-    </script>
-
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
-        body { 
-            -webkit-tap-highlight-color: transparent; 
-            background: linear-gradient(135deg, #0c2461 0%, #1e3799 100%);
-            color: #e2e8f0;
+        :root {
+            --primary-blue: #1a5fb4;
+            --secondary-blue: #2a75bb;
+            --light-blue: #e6f0fa;
+            --dark-blue: #0f3d7a;
+            --white: #ffffff;
+            --gray: #f5f7fa;
+            --light-gray: #e9ecef;
+            --dark-gray: #6c757d;
+            --success: #28a745;
+            --danger: #dc3545;
+            --warning: #ffc107;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            --border-radius: 10px;
         }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        .fade-in { animation: fadeIn 0.3s ease-out; }
-        @keyframes fadeIn { 
-            from { opacity: 0; transform: translateY(10px); } 
-            to { opacity: 1; transform: translateY(0); } 
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
-        
-        /* Modal Transitions */
-        .modal { transition: opacity 0.25s ease; }
-        .modal-content { transition: transform 0.25s ease; }
-        .modal.hidden { opacity: 0; pointer-events: none; }
-        .modal.hidden .modal-content { transform: scale(0.95); }
-        
-        /* Advanced UI Elements */
-        .dashboard-card {
-            background: rgba(30, 41, 59, 0.7);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(165, 180, 252, 0.2);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f0f5ff;
+            color: #333;
+            overflow-x: hidden;
         }
-        .dashboard-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
-            border-color: rgba(212, 175, 55, 0.3);
+
+        .container {
+            display: flex;
+            min-height: 100vh;
         }
-        
-        .product-card {
-            background: rgba(26, 58, 95, 0.6);
-            backdrop-filter: blur(5px);
-            border: 1px solid rgba(100, 116, 139, 0.3);
-            transition: all 0.3s ease;
+
+        /* Sidebar Styles */
+        .sidebar {
+            width: 260px;
+            background: linear-gradient(180deg, var(--primary-blue), var(--dark-blue));
+            color: var(--white);
+            padding: 20px 0;
+            height: 100vh;
+            position: fixed;
+            box-shadow: var(--shadow);
+            z-index: 100;
         }
-        .product-card:hover {
-            transform: translateY(-3px);
-            border-color: rgba(212, 175, 55, 0.5);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+
+        .logo {
+            padding: 0 20px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            margin-bottom: 20px;
         }
-        
-        .category-badge {
-            transition: all 0.2s ease;
-        }
-        .category-badge:hover {
-            transform: scale(1.05);
-        }
-        
-        .glow-effect {
-            box-shadow: 0 0 15px rgba(212, 175, 55, 0.5);
-            animation: pulse 2s infinite;
-        }
-        @keyframes pulse {
-            0% { box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.4); }
-            70% { box-shadow: 0 0 0 10px rgba(212, 175, 55, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(212, 175, 55, 0); }
-        }
-        
-        .server-status {
-            display: inline-block;
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            background-color: #10b981;
-            margin-right: 8px;
-        }
-        .server-status.offline {
-            background-color: #ef4444;
-            box-shadow: 0 0 8px #ef4444;
-        }
-        
-        /* Responsive adjustments */
-        @media (max-width: 768px) {
-            .nav-btn-text { display: none; }
-            .dashboard-grid { grid-template-columns: repeat(2, 1fr); }
-            .sidebar { 
-                position: fixed;
-                left: 0;
-                top: 0;
-                height: 100%;
-                z-index: 100;
-                transform: translateX(-100%);
-                transition: transform 0.3s ease;
-            }
-            .sidebar.active {
-                transform: translateX(0);
-            }
-        }
-        
-        @media (max-width: 480px) {
-            .dashboard-grid { grid-template-columns: 1fr; }
-            .server-status-text { display: none; }
-        }
-        
-        .nav-menu-item {
+
+        .logo h1 {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 700;
+            font-size: 24px;
             display: flex;
             align-items: center;
-            width: 100%;
-            padding: 12px 16px;
-            border-radius: 10px;
-            background: transparent;
-            border: none;
-            color: #94a3b8;
-            text-align: left;
+            gap: 10px;
+        }
+
+        .logo i {
+            color: var(--warning);
+            font-size: 28px;
+        }
+
+        .logo span {
+            color: var(--warning);
+        }
+
+        .nav-menu {
+            list-style: none;
+            padding: 0 15px;
+        }
+
+        .nav-item {
+            margin-bottom: 5px;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 14px 20px;
+            color: rgba(255, 255, 255, 0.85);
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s ease;
             font-weight: 500;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            background: rgba(255, 255, 255, 0.15);
+            color: var(--white);
+            transform: translateX(5px);
+        }
+
+        .nav-link i {
+            margin-right: 12px;
+            font-size: 18px;
+            width: 24px;
+            text-align: center;
+        }
+
+        .nav-link.active {
+            background: var(--white);
+            color: var(--primary-blue);
+        }
+
+        .nav-link.active i {
+            color: var(--primary-blue);
+        }
+
+        /* Main Content Styles */
+        .main-content {
+            flex: 1;
+            margin-left: 260px;
+            padding: 25px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--light-gray);
+        }
+
+        .page-title {
+            font-family: 'Poppins', sans-serif;
+            font-size: 28px;
+            font-weight: 600;
+            color: var(--dark-blue);
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: var(--primary-blue);
+            color: var(--white);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 18px;
+        }
+
+        /* Tab System */
+        .tabs {
+            display: flex;
+            margin-bottom: 25px;
+            border-bottom: 2px solid var(--light-gray);
+        }
+
+        .tab {
+            padding: 12px 25px;
             cursor: pointer;
-            transition: all 0.2s ease;
+            font-weight: 500;
+            color: var(--dark-gray);
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
         }
-        .nav-menu-item:hover {
-            background: rgba(165, 180, 252, 0.1);
-            color: #cbd5e1;
+
+        .tab.active {
+            color: var(--primary-blue);
+            border-bottom: 3px solid var(--primary-blue);
         }
-        .nav-menu-item.active {
-            background: rgba(212, 175, 55, 0.15);
-            color: #d4af37;
-            box-shadow: 0 4px 6px rgba(212, 175, 55, 0.1);
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Dashboard Content */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: var(--white);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            padding: 25px;
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--light-gray);
+        }
+
+        .card-title {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 600;
+            font-size: 18px;
+            color: var(--dark-blue);
+        }
+
+        .card-icon {
+            width: 45px;
+            height: 45px;
+            border-radius: 10px;
+            background: var(--light-blue);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary-blue);
+            font-size: 20px;
+        }
+
+        .stats-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--primary-blue);
+            margin: 15px 0;
+        }
+
+        .stats-label {
+            color: var(--dark-gray);
+            font-size: 14px;
+        }
+
+        /* POS Interface */
+        .pos-container {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 25px;
+        }
+
+        .products-container {
+            background: var(--white);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            padding: 20px;
+            height: fit-content;
+        }
+
+        .search-bar {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .search-bar input {
+            width: 100%;
+            padding: 12px 20px 12px 45px;
+            border: 1px solid var(--light-gray);
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .search-bar input:focus {
+            border-color: var(--primary-blue);
+            outline: none;
+        }
+
+        .search-bar i {
+            position: absolute;
+            left: 15px;
+            top: 13px;
+            color: var(--dark-gray);
+        }
+
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .product-card {
+            border: 1px solid var(--light-gray);
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: var(--gray);
+        }
+
+        .product-card:hover {
+            border-color: var(--primary-blue);
+            transform: scale(1.03);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .product-card.active {
+            border-color: var(--primary-blue);
+            background: var(--light-blue);
+        }
+
+        .product-image {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 10px;
+            background: var(--white);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary-blue);
+            font-size: 30px;
+        }
+
+        .product-name {
+            font-weight: 500;
+            margin-bottom: 5px;
+            color: var(--dark-blue);
+        }
+
+        .product-price {
+            font-weight: 700;
+            color: var(--primary-blue);
+        }
+
+        .cart-container {
+            background: var(--white);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            padding: 20px;
+            height: fit-content;
+        }
+
+        .cart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--light-gray);
+        }
+
+        .cart-items {
+            max-height: 450px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+        }
+
+        .cart-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--light-gray);
+        }
+
+        .cart-item-details {
+            flex: 1;
+        }
+
+        .cart-item-name {
+            font-weight: 500;
+            color: var(--dark-blue);
+        }
+
+        .cart-item-price {
+            color: var(--primary-blue);
+            font-weight: 600;
+        }
+
+        .cart-item-quantity {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 5px;
+        }
+
+        .quantity-btn {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: var(--light-blue);
+            color: var(--primary-blue);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-weight: bold;
+            border: none;
+        }
+
+        .cart-total {
+            display: flex;
+            justify-content: space-between;
+            font-size: 20px;
+            font-weight: 700;
+            padding-top: 15px;
+            border-top: 2px solid var(--light-gray);
+            margin-top: 15px;
+        }
+
+        .action-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .btn {
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn-primary {
+            background: var(--primary-blue);
+            color: var(--white);
+        }
+
+        .btn-primary:hover {
+            background: var(--dark-blue);
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: var(--light-gray);
+            color: var(--dark-gray);
+        }
+
+        .btn-secondary:hover {
+            background: var(--gray);
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: var(--white);
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: var(--white);
+        }
+
+        .btn-print {
+            background: var(--light-blue);
+            color: var(--primary-blue);
+            border: 1px solid var(--primary-blue);
+        }
+
+        .btn-print:hover {
+            background: #d1e4f7;
+        }
+
+        .btn-whatsapp {
+            background: #25D366;
+            color: white;
+        }
+
+        .btn-whatsapp:hover {
+            background: #128C7E;
+        }
+
+        /* Tables */
+        .table-container {
+            background: var(--white);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            margin-top: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 15px 20px;
+            text-align: left;
+            border-bottom: 1px solid var(--light-gray);
+        }
+
+        th {
+            background-color: var(--light-blue);
+            font-weight: 600;
+            color: var(--dark-blue);
+        }
+
+        tr:hover {
+            background-color: var(--gray);
+        }
+
+        .action-cell {
+            display: flex;
+            gap: 10px;
+        }
+
+        .print-btn {
+            background: none;
+            border: none;
+            color: var(--primary-blue);
+            cursor: pointer;
+            font-size: 18px;
+            transition: color 0.3s;
+        }
+
+        .print-btn:hover {
+            color: var(--dark-blue);
+        }
+
+        /* Receipt Styles */
+        #receipt {
+            display: none;
+            max-width: 400px;
+            margin: 0 auto;
+            padding: 30px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+
+        .receipt-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .receipt-title {
+            font-family: 'Poppins', sans-serif;
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary-blue);
+            margin: 5px 0;
+        }
+
+        .receipt-address {
+            color: var(--dark-gray);
+            font-size: 14px;
+            margin: 3px 0;
+        }
+
+        .receipt-items {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        .receipt-items th, .receipt-items td {
+            padding: 8px 0;
+            border-bottom: 1px dashed #ccc;
+        }
+
+        .receipt-total {
+            font-weight: 700;
+            font-size: 18px;
+            color: var(--primary-blue);
+            text-align: right;
+            margin: 20px 0;
+        }
+
+        .receipt-footer {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 14px;
+            color: var(--dark-gray);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 992px) {
+            .container {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+                margin-bottom: 20px;
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+            
+            .pos-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .tabs {
+                flex-direction: column;
+            }
+            
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
         }
     </style>
 </head>
-<body class="bg-gray-900 text-gray-200 h-screen flex flex-col overflow-hidden font-sans">
-
-    <!-- System Status Bar -->
-    <div class="bg-darkGray text-xs py-1 px-4 flex justify-between items-center border-b border-blue-900/50">
-        <div class="flex items-center">
-            <span class="server-status"></span>
-            <span class="server-status-text">System operational • Backend connected</span>
-        </div>
-        <div class="flex items-center gap-4">
-            <span class="flex items-center">
-                <i class="fas fa-database mr-1 text-accentGold"></i>
-                <span>Synchronized</span>
-            </span>
-            <span class="flex items-center">
-                <i class="fas fa-user mr-1 text-accentGold"></i>
-                <span>Admin • Victor Olal</span>
-            </span>
-        </div>
-    </div>
-
-    <!-- HEADER -->
-    <header class="bg-deepBlue text-white h-16 flex items-center justify-between px-6 shadow-lg shrink-0 z-30 border-b border-blue-800">
-        <div class="flex items-center gap-3">
-            <div class="w-10 h-10 bg-accentGold rounded-xl flex items-center justify-center text-deepBlue font-bold text-lg font-serif shadow-lg">
-                <i class="fas fa-anchor"></i>
-            </div>
-            <div>
-                <h1 class="font-bold text-xl">WalkerBay POS Pro</h1>
-                <p class="text-xs text-blue-200 font-mono">Enterprise Edition v3.1</p>
-            </div>
-        </div>
-        <div class="flex items-center gap-6">
-            <div id="clock" class="text-lg font-bold font-mono bg-oceanBlue px-4 py-2 rounded-lg">
-                <i class="fas fa-clock mr-2"></i> 14:30
-            </div>
-            <div class="relative">
-                <button class="w-10 h-10 rounded-full bg-oceanBlue flex items-center justify-center hover:bg-accentGold transition">
-                    <i class="fas fa-bell text-lg"></i>
-                    <span class="absolute top-0 right-0 w-4 h-4 bg-red-500 rounded-full text-xs flex items-center justify-center">3</span>
-                </button>
-            </div>
-            <div class="flex flex-col items-end">
-                <div class="font-bold">Muhuru Bay Branch</div>
-                <div class="text-xs text-blue-200">Last sync: 42 sec ago</div>
-            </div>
-        </div>
-    </header>
-
-    <!-- MAIN CONTENT -->
-    <main class="flex-1 overflow-hidden relative flex">
-        
+<body>
+    <div class="container">
         <!-- Sidebar Navigation -->
-        <div class="sidebar w-64 bg-darkGray border-r border-blue-900/50 shrink-0 md:block hidden">
-            <div class="p-4">
-                <div class="text-accentGold font-bold text-sm mb-4 uppercase tracking-wider">Main Menu</div>
-                <nav class="space-y-1">
-                    <button onclick="switchView('register')" class="nav-menu-item active">
-                        <i class="fas fa-cash-register mr-3"></i> Point of Sale
-                    </button>
-                    <button onclick="switchView('inventory')" class="nav-menu-item">
-                        <i class="fas fa-boxes mr-3"></i> Inventory
-                    </button>
-                    <button onclick="switchView('analytics')" class="nav-menu-item">
-                        <i class="fas fa-chart-line mr-3"></i> Analytics
-                    </button>
-                    <button onclick="switchView('history')" class="nav-menu-item">
-                        <i class="fas fa-history mr-3"></i> Transactions
-                    </button>
-                    <button onclick="switchView('staff')" class="nav-menu-item">
-                        <i class="fas fa-users mr-3"></i> Staff Management
-                    </button>
-                    <button onclick="switchView('settings')" class="nav-menu-item">
-                        <i class="fas fa-cog mr-3"></i> System Settings
-                    </button>
-                </nav>
+        <div class="sidebar">
+            <div class="logo">
+                <h1><i class="fas fa-hotel"></i> Walker<span>Bay</span></h1>
             </div>
-            <div class="p-4 mt-6 border-t border-blue-900/50">
-                <div class="text-accentGold font-bold text-sm mb-2">Quick Actions</div>
-                <div class="grid grid-cols-2 gap-2">
-                    <button class="bg-deepBlue hover:bg-oceanBlue text-white text-xs py-2 rounded-md flex flex-col items-center justify-center">
-                        <i class="fas fa-qrcode text-lg mb-1"></i>
-                        <span>Scan Item</span>
-                    </button>
-                    <button onclick="printSampleReceipt()" class="bg-deepBlue hover:bg-oceanBlue text-white text-xs py-2 rounded-md flex flex-col items-center justify-center">
-                        <i class="fas fa-print text-lg mb-1"></i>
-                        <span>Print Receipt</span>
-                    </button>
-                    <button class="bg-deepBlue hover:bg-oceanBlue text-white text-xs py-2 rounded-md flex flex-col items-center justify-center">
-                        <i class="fas fa-chart-bar text-lg mb-1"></i>
-                        <span>Daily Report</span>
-                    </button>
-                    <button class="bg-deepBlue hover:bg-oceanBlue text-white text-xs py-2 rounded-md flex flex-col items-center justify-center">
-                        <i class="fas fa-cogs text-lg mb-1"></i>
-                        <span>Terminal Settings</span>
-                    </button>
-                </div>
-            </div>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="#" class="nav-link active" data-tab="dashboard">
+                        <i class="fas fa-home"></i> Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" data-tab="pos">
+                        <i class="fas fa-cash-register"></i> Point of Sale
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" data-tab="inventory">
+                        <i class="fas fa-boxes"></i> Inventory
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" data-tab="history">
+                        <i class="fas fa-history"></i> Transaction History
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="fas fa-chart-bar"></i> Reports
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="fas fa-users"></i> Staff Management
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="fas fa-cog"></i> Settings
+                    </a>
+                </li>
+            </ul>
         </div>
 
-        <!-- Mobile Navigation Drawer Toggle -->
-        <button id="menu-toggle" class="md:hidden fixed top-20 left-4 z-40 w-12 h-12 rounded-full bg-oceanBlue text-white shadow-lg flex items-center justify-center">
-            <i class="fas fa-bars text-xl" id="menu-icon"></i>
-        </button>
-
-        <!-- Content Area -->
-        <div class="content-area flex-1 overflow-auto">
-            <!-- VIEW 1: SALES REGISTER -->
-            <div id="view-register" class="h-full p-4 fade-in">
-                <!-- Search & Filters -->
-                <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6 gap-4">
-                    <div class="relative flex-1 max-w-md">
-                        <input type="text" placeholder="Search products, categories or scan barcode..." class="w-full bg-darkGray border border-blue-900/50 rounded-lg py-3 px-4 pl-10 text-white placeholder-gray-400 focus:ring-2 focus:ring-accentGold focus:border-transparent">
-                        <i class="fas fa-search absolute left-3 top-3.5 text-gray-400"></i>
-                    </div>
-                    <div class="flex flex-wrap gap-2">
-                        <button class="bg-oceanBlue hover:bg-deepBlue text-white px-4 py-2 rounded-lg flex items-center">
-                            <i class="fas fa-filter mr-2"></i> Filters
-                        </button>
-                        <button class="bg-accentGold hover:bg-yellow-600 text-deepBlue px-4 py-2 rounded-lg flex items-center">
-                            <i class="fas fa-plus mr-2"></i> New Item
-                        </button>
-                        <button class="bg-green-700 hover:bg-green-800 text-white px-4 py-2 rounded-lg flex items-center">
-                            <i class="fas fa-qrcode mr-2"></i> Scan
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Category Filter -->
-                <div class="bg-darkGray rounded-xl p-3 mb-6 border border-blue-900/50">
-                    <div class="flex overflow-x-auto no-scrollbar space-x-2 pb-1">
-                        <button onclick="filterProducts('all')" class="category-badge active px-4 py-2 bg-accentGold text-deepBlue rounded-full font-bold text-sm whitespace-nowrap transition">All Products</button>
-                        <button onclick="filterProducts('accommodation')" class="category-badge px-4 py-2 bg-oceanBlue text-white rounded-full font-bold text-sm whitespace-nowrap transition">Accommodation</button>
-                        <button onclick="filterProducts('food')" class="category-badge px-4 py-2 bg-oceanBlue text-white rounded-full font-bold text-sm whitespace-nowrap transition">Food & Beverage</button>
-                        <button onclick="filterProducts('excursion')" class="category-badge px-4 py-2 bg-oceanBlue text-white rounded-full font-bold text-sm whitespace-nowrap transition">Excursions</button>
-                        <button onclick="filterProducts('merchandise')" class="category-badge px-4 py-2 bg-oceanBlue text-white rounded-full font-bold text-sm whitespace-nowrap transition">Merchandise</button>
-                        <button class="category-badge px-4 py-2 bg-gray-700 text-gray-300 rounded-full font-bold text-sm whitespace-nowrap transition">Promotions</button>
-                    </div>
-                </div>
-
-                <!-- Product Grid -->
-                <div id="product-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 mb-24">
-                    <!-- Products will be dynamically inserted by JavaScript -->
-                </div>
-            </div>
-
-            <!-- VIEW 2: INVENTORY & REPORTS -->
-            <div id="view-inventory" class="h-full hidden fade-in">
-                <div class="p-6">
-                    <div class="flex justify-between items-center mb-6">
-                        <h2 class="text-2xl font-bold text-white">Inventory Management</h2>
-                        <button onclick="openAddItemModal()" class="bg-accentGold hover:bg-yellow-600 text-deepBlue px-5 py-2 rounded-lg font-bold flex items-center">
-                            <i class="fas fa-plus mr-2"></i> Add New Item
-                        </button>
-                    </div>
-
-                    <!-- Inventory Stats -->
-                    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-                        <div class="dashboard-card rounded-xl p-5">
-                            <div class="text-gray-400 text-sm mb-2">Total Items</div>
-                            <div class="text-3xl font-bold text-accentGold" id="total-items">128</div>
-                            <div class="mt-2 text-green-400 flex items-center text-sm">
-                                <i class="fas fa-arrow-up mr-1"></i> 12 new items this week
-                            </div>
-                        </div>
-                        <div class="dashboard-card rounded-xl p-5">
-                            <div class="text-gray-400 text-sm mb-2">Low Stock Items</div>
-                            <div class="text-3xl font-bold text-orange-400" id="low-stock">7</div>
-                            <div class="mt-2 text-gray-400 flex items-center text-sm">
-                                <i class="fas fa-exclamation-triangle mr-1 text-orange-400"></i> Requires attention
-                            </div>
-                        </div>
-                        <div class="dashboard-card rounded-xl p-5">
-                            <div class="text-gray-400 text-sm mb-2">Out of Stock</div>
-                            <div class="text-3xl font-bold text-red-400" id="out-of-stock">3</div>
-                            <div class="mt-2 text-gray-400 flex items-center text-sm">
-                                <i class="fas fa-box-open mr-1"></i> Reorder needed
-                            </div>
-                        </div>
-                        <div class="dashboard-card rounded-xl p-5">
-                            <div class="text-gray-400 text-sm mb-2">Total Value</div>
-                            <div class="text-3xl font-bold text-accentGold" id="total-value">KSh 3,850,000</div>
-                            <div class="mt-2 text-blue-400 flex items-center text-sm">
-                                <i class="fas fa-chart-line mr-1"></i> +4.2% from last month
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Inventory Table -->
-                    <div class="dashboard-card rounded-xl overflow-hidden">
-                        <div class="p-4 border-b border-blue-900/50 flex justify-between items-center">
-                            <div class="relative w-1/3">
-                                <input type="text" placeholder="Search inventory..." class="w-full bg-darkGray border border-blue-900/50 rounded-lg py-2 px-4 pl-10 text-white placeholder-gray-400">
-                                <i class="fas fa-search absolute left-3 top-2.5 text-gray-400"></i>
-                            </div>
-                            <div class="flex gap-3">
-                                <select class="bg-darkGray border border-blue-900/50 rounded-lg py-2 px-4 text-white">
-                                    <option>All Categories</option>
-                                    <option>Accommodation</option>
-                                    <option>Food & Beverage</option>
-                                    <option>Excursions</option>
-                                    <option>Merchandise</option>
-                                </select>
-                                <button class="bg-oceanBlue hover:bg-deepBlue px-4 py-2 rounded-lg flex items-center">
-                                    <i class="fas fa-download mr-2"></i> Export
-                                </button>
-                            </div>
-                        </div>
-                        
-                        <div class="overflow-x-auto">
-                            <table class="w-full">
-                                <thead class="bg-oceanBlue text-white">
-                                    <tr>
-                                        <th class="text-left p-4 font-bold">Item</th>
-                                        <th class="text-left p-4 font-bold">Category</th>
-                                        <th class="text-left p-4 font-bold">Price</th>
-                                        <th class="text-left p-4 font-bold">Stock</th>
-                                        <th class="text-left p-4 font-bold">Status</th>
-                                        <th class="text-right p-4 font-bold">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="inventory-table-body">
-                                    <!-- Inventory items will be dynamically inserted here -->
-                                </tbody>
-                            </table>
-                        </div>
-                        
-                        <div class="p-4 border-t border-blue-900/50 flex justify-between items-center">
-                            <div class="text-gray-400">Showing 1 to 10 of 128 entries</div>
-                            <div class="flex gap-2">
-                                <button class="px-4 py-2 bg-darkGray rounded-lg text-gray-400">Previous</button>
-                                <button class="px-4 py-2 bg-accentGold text-deepBlue rounded-lg font-bold">1</button>
-                                <button class="px-4 py-2 bg-darkGray rounded-lg text-gray-400">2</button>
-                                <button class="px-4 py-2 bg-darkGray rounded-lg text-gray-400">3</button>
-                                <button class="px-4 py-2 bg-darkGray rounded-lg text-gray-400">Next</button>
-                            </div>
-                        </div>
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="header">
+                <h1 class="page-title">Point of Sale System</h1>
+                <div class="user-info">
+                    <div class="user-avatar">WH</div>
+                    <div>
+                        <div>WalkerBay Admin</div>
+                        <div style="font-size: 13px; color: var(--dark-gray);">Muhuru-Bay Branch</div>
                     </div>
                 </div>
             </div>
 
-            <!-- VIEW 3: ANALYTICS -->
-            <div id="view-analytics" class="h-full hidden fade-in">
-                <div class="p-6">
-                    <div class="flex justify-between items-center mb-6">
-                        <h2 class="text-2xl font-bold text-white">Business Analytics</h2>
-                        <div class="flex gap-3">
-                            <select class="bg-darkGray border border-blue-900/50 rounded-lg py-2 px-4 text-white">
-                                <option>Today</option>
-                                <option selected>This Week</option>
-                                <option>This Month</option>
-                                <option>This Quarter</option>
-                                <option>This Year</option>
-                            </select>
-                            <button class="bg-oceanBlue hover:bg-deepBlue px-4 py-2 rounded-lg flex items-center">
-                                <i class="fas fa-download mr-2"></i> Export Report
+            <!-- Dashboard Tab -->
+            <div id="dashboard" class="tab-content active">
+                <div class="dashboard-grid">
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">Today's Sales</div>
+                            <div class="card-icon">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                        </div>
+                        <div class="stats-value">KES 152,430</div>
+                        <div class="stats-label">+18.5% from yesterday</div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">Active Orders</div>
+                            <div class="card-icon">
+                                <i class="fas fa-clipboard-list"></i>
+                            </div>
+                        </div>
+                        <div class="stats-value">24</div>
+                        <div class="stats-label">12 pending approval</div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">Low Stock Items</div>
+                            <div class="card-icon">
+                                <i class="fas fa-exclamation-triangle"></i>
+                            </div>
+                        </div>
+                        <div class="stats-value">8</div>
+                        <div class="stats-label">Restock needed</div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Recent Transactions</div>
+                    </div>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Transaction ID</th>
+                                    <th>Time</th>
+                                    <th>Items</th>
+                                    <th>Total</th>
+                                    <th>Payment Method</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>TXN-9876</td>
+                                    <td>10:24 AM</td>
+                                    <td>5</td>
+                                    <td>KES 4,850</td>
+                                    <td>Cash</td>
+                                    <td class="action-cell">
+                                        <button class="print-btn" title="Print Receipt">
+                                            <i class="fas fa-print"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>TXN-9875</td>
+                                    <td>09:47 AM</td>
+                                    <td>3</td>
+                                    <td>KES 2,150</td>
+                                    <td>M-Pesa</td>
+                                    <td class="action-cell">
+                                        <button class="print-btn" title="Print Receipt">
+                                            <i class="fas fa-print"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>TXN-9874</td>
+                                    <td>09:15 AM</td>
+                                    <td>8</td>
+                                    <td>KES 7,240</td>
+                                    <td>Card</td>
+                                    <td class="action-cell">
+                                        <button class="print-btn" title="Print Receipt">
+                                            <i class="fas fa-print"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>TXN-9873</td>
+                                    <td>08:52 AM</td>
+                                    <td>2</td>
+                                    <td>KES 1,890</td>
+                                    <td>Cash</td>
+                                    <td class="action-cell">
+                                        <button class="print-btn" title="Print Receipt">
+                                            <i class="fas fa-print"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- POS Tab -->
+            <div id="pos" class="tab-content">
+                <div class="pos-container">
+                    <div class="products-container">
+                        <div class="search-bar">
+                            <i class="fas fa-search"></i>
+                            <input type="text" id="product-search" placeholder="Search products...">
+                        </div>
+                        
+                        <div class="products-grid" id="products-list">
+                            <!-- Products will be generated by JavaScript -->
+                        </div>
+                    </div>
+                    
+                    <div class="cart-container">
+                        <div class="cart-header">
+                            <h2>Current Order</h2>
+                            <span id="cart-count">0 items</span>
+                        </div>
+                        
+                        <div class="cart-items" id="cart-items">
+                            <!-- Cart items will be added here -->
+                        </div>
+                        
+                        <div class="cart-total">
+                            <span>Total:</span>
+                            <span id="cart-total">KES 0.00</span>
+                        </div>
+                        
+                        <div class="action-buttons">
+                            <button class="btn btn-secondary" id="clear-cart">
+                                <i class="fas fa-trash"></i> Clear Cart
+                            </button>
+                            <button class="btn btn-print" id="print-receipt">
+                                <i class="fas fa-print"></i> Print Receipt
+                            </button>
+                            <button class="btn btn-whatsapp" id="checkout">
+                                <i class="fab fa-whatsapp"></i> Checkout & Send to WhatsApp
                             </button>
                         </div>
                     </div>
-
-                    <!-- Analytics Dashboard -->
-                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-                        <!-- Sales Chart -->
-                        <div class="dashboard-card rounded-xl p-6">
-                            <div class="flex justify-between items-center mb-4">
-                                <h3 class="text-lg font-bold text-white">Sales Performance</h3>
-                                <div class="text-sm bg-green-900/30 text-green-400 px-3 py-1 rounded-full">+12.4% vs last period</div>
-                            </div>
-                            <div class="h-80">
-                                <canvas id="salesChart"></canvas>
-                            </div>
-                            <div class="mt-4 grid grid-cols-3 text-center">
-                                <div>
-                                    <div class="text-2xl font-bold text-accentGold" id="total-sales">KSh 182,450</div>
-                                    <div class="text-xs text-gray-400">Total Sales</div>
-                                </div>
-                                <div>
-                                    <div class="text-2xl font-bold text-white" id="total-transactions">87</div>
-                                    <div class="text-xs text-gray-400">Transactions</div>
-                                </div>
-                                <div>
-                                    <div class="text-2xl font-bold text-green-400" id="avg-transaction">KSh 2,350</div>
-                                    <div class="text-xs text-gray-400">Avg. Transaction</div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Category Performance -->
-                        <div class="dashboard-card rounded-xl p-6">
-                            <div class="flex justify-between items-center mb-4">
-                                <h3 class="text-lg font-bold text-white">Category Performance</h3>
-                                <div class="flex gap-2">
-                                    <button class="w-6 h-6 rounded-full bg-darkGray flex items-center justify-center text-gray-400 hover:bg-gray-700">
-                                        <i class="fas fa-sync-alt"></i>
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="h-80">
-                                <canvas id="categoryChart"></canvas>
-                            </div>
-                            <div class="mt-4 text-center">
-                                <div class="inline-block bg-oceanBlue/30 text-blue-300 px-4 py-2 rounded-lg text-sm">
-                                    Food & Beverage contributes 42% of total revenue
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- KPI Cards -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                        <div class="dashboard-card rounded-xl p-5">
-                            <div class="flex items-start justify-between">
-                                <div>
-                                    <div class="text-gray-400 text-sm mb-1">Top Selling Item</div>
-                                    <div class="text-xl font-bold text-white">Standard Room</div>
-                                    <div class="text-accentGold font-bold mt-1">32 bookings</div>
-                                </div>
-                                <div class="w-12 h-12 rounded-full bg-gradient-to-br from-yellow-500 to-yellow-700 flex items-center justify-center text-deepBlue">
-                                    <i class="fas fa-trophy text-xl"></i>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="dashboard-card rounded-xl p-5">
-                            <div class="flex items-start justify-between">
-                                <div>
-                                    <div class="text-gray-400 text-sm mb-1">Peak Sales Hour</div>
-                                    <div class="text-xl font-bold text-white">6:00 PM - 8:00 PM</div>
-                                    <div class="text-accentGold font-bold mt-1">28% of daily sales</div>
-                                </div>
-                                <div class="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-purple-700 flex items-center justify-center text-white">
-                                    <i class="fas fa-clock text-xl"></i>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="dashboard-card rounded-xl p-5">
-                            <div class="flex items-start justify-between">
-                                <div>
-                                    <div class="text-gray-400 text-sm mb-1">Customer Growth</div>
-                                    <div class="text-xl font-bold text-white">+18% MoM</div>
-                                    <div class="text-green-400 font-bold mt-1">1,245 new customers</div>
-                                </div>
-                                <div class="w-12 h-12 rounded-full bg-gradient-to-br from-green-500 to-green-700 flex items-center justify-center text-white">
-                                    <i class="fas fa-users text-xl"></i>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="dashboard-card rounded-xl p-5">
-                            <div class="flex items-start justify-between">
-                                <div>
-                                    <div class="text-gray-400 text-sm mb-1">Profit Margin</div>
-                                    <div class="text-xl font-bold text-white">38.6%</div>
-                                    <div class="text-blue-400 font-bold mt-1">+2.3% from last month</div>
-                                </div>
-                                <div class="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center text-white">
-                                    <i class="fas fa-chart-pie text-xl"></i>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Staff Performance -->
-                    <div class="dashboard-card rounded-xl p-6">
-                        <div class="flex justify-between items-center mb-5">
-                            <h3 class="text-lg font-bold text-white">Staff Performance</h3>
-                            <button class="text-accentGold hover:text-yellow-300 text-sm font-medium">View Full Report →</button>
-                        </div>
-                        
-                        <div class="overflow-x-auto">
-                            <table class="w-full">
-                                <thead class="bg-oceanBlue text-white">
-                                    <tr>
-                                        <th class="text-left p-3 font-bold">Staff Member</th>
-                                        <th class="text-left p-3 font-bold">Role</th>
-                                        <th class="text-center p-3 font-bold">Sales</th>
-                                        <th class="text-center p-3 font-bold">Transactions</th>
-                                        <th class="text-center p-3 font-bold">Avg. Rating</th>
-                                        <th class="text-right p-3 font-bold">Performance</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr class="border-b border-blue-900/30">
-                                        <td class="p-3">
-                                            <div class="flex items-center">
-                                                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-yellow-400 to-yellow-600 flex items-center justify-center text-deepBlue font-bold mr-3">VO</div>
-                                                <div>
-                                                    <div class="font-bold text-white">Victor Olal</div>
-                                                    <div class="text-xs text-blue-200">Manager</div>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td class="p-3">Manager</td>
-                                        <td class="p-3 text-center text-accentGold font-bold">KSh 84,500</td>
-                                        <td class="p-3 text-center">42</td>
-                                        <td class="p-3 text-center">
-                                            <div class="flex justify-center text-amber-400">
-                                                <i class="fas fa-star"></i>
-                                                <i class="fas fa-star"></i>
-                                                <i class="fas fa-star"></i>
-                                                <i class="fas fa-star"></i>
-                                                <i class="fas fa-star-half-alt"></i>
-                                                <span class="ml-1 text-gray-400">4.8</span>
-                                            </div>
-                                        </td>
-                                        <td class="p-3 text-right">
-                                            <div class="h-2 w-24 bg-gray-700 rounded-full overflow-hidden">
-                                                <div class="h-full bg-green-500" style="width: 92%"></div>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    <tr class="border-b border-blue-900/30">
-                                        <td class="p-3">
-                                            <div class="flex items-center">
-                                                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white font-bold mr-3">JM</div>
-                                                <div>
-                                                    <div class="font-bold text-white">Jane Mwangi</div>
-                                                    <div class="text-xs text-blue-200">Cashier</div>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td class="p-3">Cashier</td>
-                                        <td class="p-3 text-center text-accentGold font-bold">KSh 62,300</td>
-                                        <td class="p-3 text-center">38</td>
-                                        <td class="p-3 text-center">
-                                            <div class="flex justify-center text-amber-400">
-                                                <i class="fas fa-star"></i>
-                                                <i class="fas fa-star"></i>
-                                                <i class="fas fa-star"></i>
-                                                <i class="fas fa-star"></i>
-                                                <i class="far fa-star"></i>
-                                                <span class="ml-1 text-gray-400">4.2</span>
-                                            </div>
-                                        </td>
-                                        <td class="p-3 text-right">
-                                            <div class="h-2 w-24 bg-gray-700 rounded-full overflow-hidden">
-                                                <div class="h-full bg-green-400" style="width: 85%"></div>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    <tr class="border-b border-blue-900/30">
-                                        <td class="p-3">
-                                            <div class="flex items-center">
-                                                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center text-white font-bold mr-3">DK</div>
-                                                <div>
-                                                    <div class="font-bold text-white">David Kiprono</div>
-                                                    <div class="text-xs text-blue-200">Waiter</div>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td class="p-3">Waiter</td>
-                                        <td class="p-3 text-center text-accentGold font-bold">KSh 45,750</td>
-                                        <td class="p-3 text-center">29</td>
-                                        <td class="p-3 text-center">
-                                            <div class="flex justify-center text-amber-400">
-                                                <i class="fas fa-star"></i>
-                                                <i class="fas fa-star"></i>
-                                                <i class="fas fa-star"></i>
-                                                <i class="fas fa-star"></i>
-                                                <i class="fas fa-star"></i>
-                                                <span class="ml-1 text-gray-400">5.0</span>
-                                            </div>
-                                        </td>
-                                        <td class="p-3 text-right">
-                                            <div class="h-2 w-24 bg-gray-700 rounded-full overflow-hidden">
-                                                <div class="h-full bg-green-600" style="width: 98%"></div>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
                 </div>
             </div>
 
-            <!-- VIEW 4: HISTORY -->
-            <div id="view-history" class="h-full hidden fade-in">
-                <div class="p-6">
-                    <div class="flex justify-between items-center mb-6">
-                        <h2 class="text-2xl font-bold text-white">Transaction History</h2>
-                        <div class="flex gap-3">
-                            <div class="relative">
-                                <input type="date" class="bg-darkGray border border-blue-900/50 rounded-lg py-2 px-4 text-white">
-                            </div>
-                            <button class="bg-oceanBlue hover:bg-deepBlue px-4 py-2 rounded-lg flex items-center">
-                                <i class="fas fa-file-export mr-2"></i> Export Data
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Transaction Filters -->
-                    <div class="flex flex-wrap gap-3 mb-6">
-                        <select class="bg-darkGray border border-blue-900/50 rounded-lg py-2 px-4 text-white">
-                            <option>All Transactions</option>
-                            <option>Sales</option>
-                            <option>Refunds</option>
-                            <option>Voided</option>
-                        </select>
-                        <select class="bg-darkGray border border-blue-900/50 rounded-lg py-2 px-4 text-white">
-                            <option>All Payment Methods</option>
-                            <option>Cash</option>
-                            <option>M-Pesa</option>
-                            <option>Card</option>
-                            <option>Wallet</option>
-                        </select>
-                        <div class="relative flex-1 max-w-md">
-                            <input type="text" placeholder="Search transactions, customers or staff..." class="w-full bg-darkGray border border-blue-900/50 rounded-lg py-2 px-4 pl-10 text-white placeholder-gray-400">
-                            <i class="fas fa-search absolute left-3 top-2.5 text-gray-400"></i>
-                        </div>
-                        <button class="bg-red-700 hover:bg-red-800 text-white px-4 py-2 rounded-lg flex items-center">
-                            <i class="fas fa-eraser mr-2"></i> Clear Filters
+            <!-- Inventory Tab -->
+            <div id="inventory" class="tab-content">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Inventory Management</div>
+                        <button class="btn btn-primary">
+                            <i class="fas fa-plus"></i> Add New Item
                         </button>
                     </div>
+                    
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Item Name</th>
+                                    <th>Category</th>
+                                    <th>Price (KES)</th>
+                                    <th>Stock</th>
+                                    <th>Reorder Level</th>
+                                    <th>Last Updated</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>INV-001</td>
+                                    <td>Athola Fish Stew</td>
+                                    <td>Signature Dishes</td>
+                                    <td>1,250</td>
+                                    <td>24</td>
+                                    <td>10</td>
+                                    <td>Nov 25, 2025</td>
+                                    <td class="action-cell">
+                                        <button class="print-btn" title="Print Label">
+                                            <i class="fas fa-print"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>INV-002</td>
+                                    <td>Osuga Greens</td>
+                                    <td>Signature Dishes</td>
+                                    <td>650</td>
+                                    <td>18</td>
+                                    <td>8</td>
+                                    <td>Nov 25, 2025</td>
+                                    <td class="action-cell">
+                                        <button class="print-btn" title="Print Label">
+                                            <i class="fas fa-print"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>INV-003</td>
+                                    <td>Bottled Water (500ml)</td>
+                                    <td>Beverages</td>
+                                    <td>150</td>
+                                    <td>87</td>
+                                    <td>30</td>
+                                    <td>Nov 24, 2025</td>
+                                    <td class="action-cell">
+                                        <button class="print-btn" title="Print Label">
+                                            <i class="fas fa-print"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>INV-004</td>
+                                    <td>Tusker Beer (500ml)</td>
+                                    <td>Beverages</td>
+                                    <td>350</td>
+                                    <td>42</td>
+                                    <td>20</td>
+                                    <td>Nov 24, 2025</td>
+                                    <td class="action-cell">
+                                        <button class="print-btn" title="Print Label">
+                                            <i class="fas fa-print"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>INV-005</td>
+                                    <td>Nyama Choma (Platter)</td>
+                                    <td>Grilled Specials</td>
+                                    <td>1,850</td>
+                                    <td>12</td>
+                                    <td>8</td>
+                                    <td>Nov 25, 2025</td>
+                                    <td class="action-cell">
+                                        <button class="print-btn" title="Print Label">
+                                            <i class="fas fa-print"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
 
-                    <!-- Transactions Table -->
-                    <div class="dashboard-card rounded-xl overflow-hidden">
-                        <div class="overflow-x-auto">
-                            <table class="w-full">
-                                <thead class="bg-oceanBlue text-white">
-                                    <tr>
-                                        <th class="text-left p-4 font-bold">Transaction ID</th>
-                                        <th class="text-left p-4 font-bold">Date & Time</th>
-                                        <th class="text-left p-4 font-bold">Items</th>
-                                        <th class="text-left p-4 font-bold">Customer</th>
-                                        <th class="text-left p-4 font-bold">Staff</th>
-                                        <th class="text-left p-4 font-bold">Payment Method</th>
-                                        <th class="text-right p-4 font-bold">Amount</th>
-                                        <th class="text-center p-4 font-bold">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="history-table-body">
-                                    <!-- Transaction history will be dynamically inserted here -->
-                                </tbody>
-                            </table>
+            <!-- History Tab -->
+            <div id="history" class="tab-content">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Transaction History</div>
+                        <div>
+                            <input type="date" id="date-filter" style="padding: 8px 12px; border-radius: 6px; border: 1px solid var(--light-gray);">
                         </div>
-                        
-                        <div class="p-4 border-t border-blue-900/50 flex justify-between items-center">
-                            <div class="text-gray-400">Showing 1 to 10 of 243 transactions</div>
-                            <div class="flex gap-2">
-                                <button class="px-4 py-2 bg-darkGray rounded-lg text-gray-400">Previous</button>
-                                <button class="px-4 py-2 bg-accentGold text-deepBlue rounded-lg font-bold">1</button>
-                                <button class="px-4 py-2 bg-darkGray rounded-lg text-gray-400">2</button>
-                                <button class="px-4 py-2 bg-darkGray rounded-lg text-gray-400">3</button>
-                                <button class="px-4 py-2 bg-darkGray rounded-lg text-gray-400">Next</button>
-                            </div>
-                        </div>
+                    </div>
+                    
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Transaction ID</th>
+                                    <th>Date & Time</th>
+                                    <th>Items</th>
+                                    <th>Total (KES)</th>
+                                    <th>Customer</th>
+                                    <th>Staff</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>TXN-9876</td>
+                                    <td>Nov 27, 2025 - 10:24 AM</td>
+                                    <td>5</td>
+                                    <td>4,850</td>
+                                    <td>Walk-in Customer</td>
+                                    <td>John Doe</td>
+                                    <td class="action-cell">
+                                        <button class="print-btn" title="Print Receipt">
+                                            <i class="fas fa-print"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>TXN-9875</td>
+                                    <td>Nov 27, 2025 - 09:47 AM</td>
+                                    <td>3</td>
+                                    <td>2,150</td>
+                                    <td>James Omondi</td>
+                                    <td>Jane Smith</td>
+                                    <td class="action-cell">
+                                        <button class="print-btn" title="Print Receipt">
+                                            <i class="fas fa-print"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>TXN-9874</td>
+                                    <td>Nov 27, 2025 - 09:15 AM</td>
+                                    <td>8</td>
+                                    <td>7,240</td>
+                                    <td>Victoria Resort</td>
+                                    <td>John Doe</td>
+                                    <td class="action-cell">
+                                        <button class="print-btn" title="Print Receipt">
+                                            <i class="fas fa-print"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>TXN-9873</td>
+                                    <td>Nov 26, 2025 - 08:52 PM</td>
+                                    <td>2</td>
+                                    <td>1,890</td>
+                                    <td>Walk-in Customer</td>
+                                    <td>Jane Smith</td>
+                                    <td class="action-cell">
+                                        <button class="print-btn" title="Print Receipt">
+                                            <i class="fas fa-print"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>TXN-9872</td>
+                                    <td>Nov 26, 2025 - 06:34 PM</td>
+                                    <td>4</td>
+                                    <td>3,240</td>
+                                    <td>Samuel Ochieng</td>
+                                    <td>John Doe</td>
+                                    <td class="action-cell">
+                                        <button class="print-btn" title="Print Receipt">
+                                            <i class="fas fa-print"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>TXN-9871</td>
+                                    <td>Nov 26, 2025 - 02:17 PM</td>
+                                    <td>6</td>
+                                    <td>5,780</td>
+                                    <td>Mara Safari Ltd</td>
+                                    <td>Jane Smith</td>
+                                    <td class="action-cell">
+                                        <button class="print-btn" title="Print Receipt">
+                                            <i class="fas fa-print"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
-        </div>
-    </main>
 
-    <!-- FLOATING CART BAR -->
-    <div id="mobile-cart-bar" onclick="openCartModal()" class="fixed bottom-24 right-6 bg-deepBlue text-white p-4 rounded-2xl shadow-2xl flex items-center gap-4 transform translate-y-24 transition-transform duration-300 z-40 cursor-pointer">
-        <div class="bg-accentGold text-deepBlue w-10 h-10 rounded-xl flex items-center justify-center font-bold text-lg shadow-lg" id="cart-count-float">0</div>
-        <div class="flex flex-col">
-            <span class="text-sm font-medium">Current Order</span>
-            <span class="text-lg font-bold" id="cart-total-float">KSh 0</span>
-        </div>
-        <div class="ml-2">
-            <i class="fas fa-shopping-cart text-xl"></i>
-        </div>
-    </div>
-
-    <!-- BOTTOM NAVIGATION (Mobile) -->
-    <nav class="bg-darkGray border-t border-blue-900/50 h-16 flex justify-around items-center shrink-0 z-50 md:hidden">
-        <button onclick="switchView('register')" class="nav-btn text-accentGold flex flex-col items-center gap-1 w-full h-full justify-center active:bg-gray-800">
-            <i class="fas fa-cash-register text-xl"></i>
-            <span class="text-[10px] font-bold">Sale</span>
-        </button>
-        <button onclick="switchView('inventory')" class="nav-btn text-gray-400 flex flex-col items-center gap-1 w-full h-full justify-center active:bg-gray-800">
-            <i class="fas fa-boxes text-xl"></i>
-            <span class="text-[10px] font-bold">Stock</span>
-        </button>
-        <button onclick="openCartModal()" class="nav-btn text-white flex flex-col items-center gap-1 w-full h-full justify-center active:bg-accentGold bg-gradient-to-br from-yellow-500 to-yellow-700 relative z-10">
-            <div class="absolute -top-3 -right-3 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center text-white text-xs font-bold" id="cart-badge-mobile">0</div>
-            <i class="fas fa-shopping-cart text-xl"></i>
-            <span class="text-[10px] font-bold">Cart</span>
-        </button>
-        <button onclick="switchView('analytics')" class="nav-btn text-gray-400 flex flex-col items-center gap-1 w-full h-full justify-center active:bg-gray-800">
-            <i class="fas fa-chart-bar text-xl"></i>
-            <span class="text-[10px] font-bold">Reports</span>
-        </button>
-        <button onclick="switchView('history')" class="nav-btn text-gray-400 flex flex-col items-center gap-1 w-full h-full justify-center active:bg-gray-800">
-            <i class="fas fa-history text-xl"></i>
-            <span class="text-[10px] font-bold">History</span>
-        </button>
-    </nav>
-
-    <!-- CART MODAL -->
-    <div id="cart-modal" class="modal hidden fixed inset-0 bg-black/70 backdrop-blur-sm z-[60] flex justify-end">
-        <div class="modal-content bg-darkGray w-full max-w-md h-full shadow-2xl flex flex-col border-l border-blue-800">
-            <div class="p-5 border-b border-blue-900/50 flex justify-between items-center">
-                <h3 class="font-bold text-xl text-white flex items-center">
-                    <i class="fas fa-shopping-cart mr-3 text-accentGold"></i>
-                    Current Order (<span id="cart-item-count">0</span> Items)
-                </h3>
-                <button onclick="closeCartModal()" class="w-10 h-10 rounded-full bg-oceanBlue text-gray-300 flex items-center justify-center hover:bg-red-600 transition">
-                    <i class="fas fa-times text-lg"></i>
-                </button>
-            </div>
-            <div id="cart-items-container" class="flex-1 overflow-y-auto p-5 space-y-4">
-                <!-- Cart items will be dynamically inserted here -->
-            </div>
-            
-            <div class="p-6 bg-darkGray border-t border-blue-900/50">
-                <div class="space-y-4 mb-6">
-                    <div class="flex justify-between text-lg">
-                        <span class="text-gray-300">Subtotal:</span>
-                        <span class="font-bold text-white" id="cart-subtotal">KSh 0</span>
-                    </div>
-                    <div class="flex justify-between text-lg">
-                        <span class="text-gray-300">Discount (10%):</span>
-                        <span class="font-bold text-green-400" id="cart-discount">-KSh 0</span>
-                    </div>
-                    <div class="flex justify-between text-lg">
-                        <span class="text-gray-300">Tax (16%):</span>
-                        <span class="font-bold text-white" id="cart-tax">KSh 0</span>
-                    </div>
-                    <div class="flex justify-between pt-3 border-t border-blue-800">
-                        <span class="text-xl font-bold text-white">TOTAL:</span>
-                        <span class="text-2xl font-bold text-accentGold" id="cart-total">KSh 0</span>
-                    </div>
+            <!-- Receipt Template -->
+            <div id="receipt">
+                <div class="receipt-header">
+                    <div class="receipt-title">WALKERBAY HOTELS LIMITED</div>
+                    <div class="receipt-address">Muhuru-Bay, Migori County, Kenya</div>
+                    <div class="receipt-address">Tel: +254 700 342 672 | Email: info@walkerbay.co.ke</div>
+                    <div class="receipt-address">"Where Hospitality Meets Adventure"</div>
                 </div>
-                
-                <div class="grid grid-cols-2 gap-3 mb-5">
-                    <button class="py-3 bg-oceanBlue hover:bg-deepBlue border border-blue-700 text-white rounded-lg text-sm font-bold uppercase transition">
-                        Apply Discount
-                    </button>
-                    <button class="py-3 bg-gray-800 hover:bg-gray-700 text-white rounded-lg text-sm font-bold uppercase transition">
-                        Add Customer
-                    </button>
+                <div class="receipt-info">
+                    <div>Transaction ID: <span id="receipt-id">TXN-9876</span></div>
+                    <div>Date: <span id="receipt-date">November 27, 2025</span></div>
+                    <div>Time: <span id="receipt-time">10:24 AM</span></div>
+                    <div>Staff: <span id="receipt-staff">John Doe</span></div>
                 </div>
-                
-                <div class="mb-5">
-                    <label class="block text-xs text-gray-400 mb-2">PAYMENT METHOD</label>
-                    <div class="grid grid-cols-2 gap-3">
-                        <button onclick="setPaymentMethod('cash')" id="btn-cash" class="pay-method active py-3 border-2 border-accentGold bg-gradient-to-br from-yellow-600 to-yellow-800 text-deepBlue rounded-lg text-xs font-bold uppercase">
-                            <i class="fas fa-money-bill-wave mr-1"></i> Cash
-                        </button>
-                        <button onclick="setPaymentMethod('mpesa')" id="btn-mpesa" class="pay-method py-3 border-2 border-blue-700 hover:border-blue-500 text-blue-300 rounded-lg text-xs font-bold uppercase">
-                            <i class="fas fa-mobile-alt mr-1"></i> M-Pesa
-                        </button>
-                    </div>
+                <table class="receipt-items">
+                    <thead>
+                        <tr>
+                            <th>Item</th>
+                            <th>Qty</th>
+                            <th>Price</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody id="receipt-items">
+                        <!-- Receipt items will be populated here -->
+                    </tbody>
+                </table>
+                <div class="receipt-total">TOTAL: KES <span id="receipt-total">0.00</span></div>
+                <div class="receipt-footer">
+                    <p>Thank you for your visit!</p>
+                    <p>Visit us again at Muhuru-Bay, Migori County</p>
+                    <p>www.walkerbayhotels.co.ke</p>
                 </div>
-                
-                <button onclick="completeSale()" class="w-full bg-accentGold hover:bg-yellow-600 text-deepBlue py-4 rounded-xl font-bold text-lg tracking-wider shadow-lg transition transform hover:scale-[1.02] active:scale-[0.98]">
-                    <i class="fas fa-check-circle mr-2"></i> Complete Sale & WhatsApp Receipt
-                </button>
             </div>
         </div>
     </div>
 
-    <!-- ADD ITEM MODAL -->
-    <div id="add-item-modal" class="modal hidden fixed inset-0 bg-black/70 backdrop-blur-sm z-[70] flex items-center justify-center p-4">
-        <div class="modal-content bg-darkGray w-full max-w-md rounded-xl shadow-2xl overflow-hidden border border-blue-800">
-            <div class="bg-gradient-to-r from-deepBlue to-oceanBlue p-5 text-white flex justify-between items-center">
-                <h3 class="font-bold text-xl">Add New Inventory Item</h3>
-                <button onclick="closeAddItemModal()" class="w-8 h-8 rounded-full bg-blue-900/50 flex items-center justify-center hover:bg-red-500/30 transition">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <div class="p-6 space-y-5">
-                <div>
-                    <label class="text-xs font-bold uppercase text-gray-400 mb-1 block">Item Name</label>
-                    <input type="text" id="new-item-name" class="w-full bg-gray-800 border border-blue-900/50 rounded-lg p-3 text-white focus:ring-2 focus:ring-accentGold focus:border-transparent" placeholder="e.g. Deluxe Room, Sunset Cruise">
-                </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="text-xs font-bold uppercase text-gray-400 mb-1 block">Price (KSh)</label>
-                        <input type="number" id="new-item-price" class="w-full bg-gray-800 border border-blue-900/50 rounded-lg p-3 text-white focus:ring-2 focus:ring-accentGold focus:border-transparent" placeholder="0.00">
-                    </div>
-                    <div>
-                        <label class="text-xs font-bold uppercase text-gray-400 mb-1 block">Stock Quantity</label>
-                        <input type="number" id="new-item-stock" class="w-full bg-gray-800 border border-blue-900/50 rounded-lg p-3 text-white focus:ring-2 focus:ring-accentGold focus:border-transparent" placeholder="0">
-                    </div>
-                </div>
-                <div>
-                    <label class="text-xs font-bold uppercase text-gray-400 mb-1 block">Category</label>
-                    <select id="new-item-category" class="w-full bg-gray-800 border border-blue-900/50 rounded-lg p-3 text-white focus:ring-2 focus:ring-accentGold focus:border-transparent">
-                        <option value="accommodation">Accommodation</option>
-                        <option value="food">Food & Beverage</option>
-                        <option value="excursion">Excursions</option>
-                        <option value="merchandise">Merchandise</option>
-                    </select>
-                </div>
-                <button onclick="saveNewItem()" class="w-full bg-accentGold hover:bg-yellow-600 text-deepBlue font-bold py-3 rounded-lg mt-2 transition">
-                    <i class="fas fa-plus mr-2"></i> Add Item to Inventory
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- JAVASCRIPT LOGIC -->
     <script>
-        // Sample data
-        const defaultProducts = [
-            { id: 1, name: "Standard Room", category: "accommodation", price: 1500, stock: 12, icon: "fa-bed" },
-            { id: 2, name: "Suite Room", category: "accommodation", price: 2800, stock: 8, icon: "fa-couch" },
-            { id: 3, name: "Breakfast Buffet", category: "food", price: 500, stock: 42, icon: "fa-utensils" },
-            { id: 4, name: "Sunset Cruise", category: "excursion", price: 2500, stock: 3, icon: "fa-ship" },
-            { id: 5, name: "Dinner Buffet", category: "food", price: 1200, stock: 28, icon: "fa-wine-glass" },
-            { id: 6, name: "Cave Exploration", category: "excursion", price: 800, stock: 15, icon: "fa-mountain" },
-            { id: 7, name: "Premium Coffee", category: "food", price: 350, stock: 0, icon: "fa-coffee" },
-            { id: 8, name: "Deluxe Room", category: "accommodation", price: 2200, stock: 6, icon: "fa-bed" },
-            { id: 9, name: "Swimming Pool Day Pass", category: "accommodation", price: 1000, stock: 20, icon: "fa-swimmer" },
-            { id: 10, name: "Lunch Buffet", category: "food", price: 800, stock: 35, icon: "fa-utensils" },
-            { id: 11, name: "Fishing Trip", category: "excursion", price: 3500, stock: 5, icon: "fa-fish" },
-            { id: 12, name: "Spa Treatment", category: "merchandise", price: 2000, stock: 10, icon: "fa-spa" }
+        // DOM Elements
+        const tabs = document.querySelectorAll('.nav-link');
+        const tabContents = document.querySelectorAll('.tab-content');
+        const productsList = document.getElementById('products-list');
+        const cartItems = document.getElementById('cart-items');
+        const cartCount = document.getElementById('cart-count');
+        const cartTotal = document.getElementById('cart-total');
+        const clearCartBtn = document.getElementById('clear-cart');
+        const printReceiptBtn = document.getElementById('print-receipt');
+        const checkoutBtn = document.getElementById('checkout');
+        const receipt = document.getElementById('receipt');
+        const receiptItems = document.getElementById('receipt-items');
+        const receiptTotal = document.getElementById('receipt-total');
+
+        // Sample Products Data
+        const products = [
+            { id: 1, name: 'Athola Fish Stew', price: 1250, category: 'Signature Dishes', image: '🐟' },
+            { id: 2, name: 'Osuga Greens', price: 650, category: 'Signature Dishes', image: '🥬' },
+            { id: 3, name: 'Bottled Water', price: 150, category: 'Beverages', image: '💧' },
+            { id: 4, name: 'Tusker Beer', price: 350, category: 'Beverages', image: '🍺' },
+            { id: 5, name: 'Nyama Choma Platter', price: 1850, category: 'Grilled Specials', image: '🍖' },
+            { id: 6, name: 'Victoria Suite Breakfast', price: 2200, category: 'Room Service', image: '🍳' },
+            { id: 7, name: 'Lake View Dinner', price: 3500, category: 'Dining', image: '🌅' },
+            { id: 8, name: 'Apoth Beef Stew', price: 950, category: 'Signature Dishes', image: '🍲' },
+            { id: 9, name: 'Fresh Tilapia', price: 1650, category: 'Lake Specials', image: '🐟' },
+            { id: 10, name: 'Mugabo Cave Tour', price: 5000, category: 'Tours', image: '⛰️' }
         ];
 
-        const sampleTransactions = [
-            { id: "WB-89275", date: "2023-11-26T14:25:18", items: [
-                {name: "Standard Room", qty: 1, price: 1500},
-                {name: "Breakfast Buffet", qty: 2, price: 500}
-            ], customer: "John Mwangi", phone: "+254712345678", staff: "Victor Olal", staffInitials: "VO", paymentMethod: "cash", total: 2500 },
-            { id: "WB-89274", date: "2023-11-26T13:48:05", items: [
-                {name: "Sunset Cruise", qty: 1, price: 2500},
-                {name: "Premium Coffee", qty: 2, price: 350}
-            ], customer: "Sarah Kimani", phone: "+254723456789", staff: "Jane Mwangi", staffInitials: "JM", paymentMethod: "mpesa", total: 3200 },
-            { id: "WB-89273", date: "2023-11-26T12:15:33", items: [
-                {name: "Suite Room", qty: 1, price: 2800},
-                {name: "Dinner Buffet", qty: 2, price: 1200}
-            ], customer: "Michael Johnson", phone: "+254734567890", staff: "David Kiprono", staffInitials: "DK", paymentMethod: "card", total: 5200 }
-        ];
-
-        // State variables
+        // Cart state
         let cart = [];
-        let currentPaymentMethod = 'cash';
-        let inventory = [...defaultProducts];
 
         // Initialize the application
-        document.addEventListener('DOMContentLoaded', function() {
-            // Render initial product grid
-            renderProducts('all');
-            
-            // Initialize charts
-            initCharts();
-            
-            // Update clock
-            updateClock();
-            setInterval(updateClock, 1000);
-            
-            // Render transaction history
-            renderTransactionHistory();
-            
-            // Render inventory table
-            renderInventoryTable();
-            
-            // Setup mobile menu toggle
-            setupMobileMenu();
-        });
-
-        function initCharts() {
-            // Sales Chart
-            const salesCtx = document.getElementById('salesChart').getContext('2d');
-            new Chart(salesCtx, {
-                type: 'line',
-                 {
-                    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-                    datasets: [{
-                        label: 'Daily Sales (KSh)',
-                         [45000, 52000, 48500, 61200, 75800, 92400, 83600],
-                        borderColor: '#d4af37',
-                        backgroundColor: 'rgba(212, 175, 55, 0.1)',
-                        borderWidth: 3,
-                        pointBackgroundColor: '#0a192f',
-                        pointBorderColor: '#d4af37',
-                        pointBorderWidth: 2,
-                        pointRadius: 5,
-                        pointHoverRadius: 7,
-                        fill: true,
-                        tension: 0.3
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: false
-                        },
-                        tooltip: {
-                            mode: 'index',
-                            intersect: false,
-                            backgroundColor: 'rgba(10, 25, 47, 0.9)',
-                            titleColor: '#d4af37',
-                            bodyColor: '#e2e8f0',
-                            borderColor: 'rgba(212, 175, 55, 0.5)',
-                            borderWidth: 1,
-                            callbacks: {
-                                label: function(context) {
-                                    return `KSh ${context.parsed.y.toLocaleString()}`;
-                                }
-                            }
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: false,
-                            grid: {
-                                color: 'rgba(100, 116, 139, 0.2)'
-                            },
-                            ticks: {
-                                color: '#94a3b8',
-                                callback: function(value) {
-                                    return 'KSh ' + value.toLocaleString();
-                                }
-                            }
-                        },
-                        x: {
-                            grid: {
-                                color: 'rgba(100, 116, 139, 0.1)'
-                            },
-                            ticks: {
-                                color: '#94a3b8'
-                            }
-                        }
-                    }
-                }
-            });
-            
-            // Category Chart
-            const categoryCtx = document.getElementById('categoryChart').getContext('2d');
-            new Chart(categoryCtx, {
-                type: 'doughnut',
-                 {
-                    labels: ['Accommodation', 'Food & Beverage', 'Excursions', 'Merchandise'],
-                    datasets: [{
-                        label: 'Revenue by Category',
-                        data: [42, 35, 18, 5],
-                        backgroundColor: [
-                            'rgba(59, 130, 246, 0.8)',
-                            'rgba(16, 185, 129, 0.8)',
-                            'rgba(245, 158, 11, 0.8)',
-                            'rgba(139, 92, 246, 0.8)'
-                        ],
-                        borderWidth: 0,
-                        hoverOffset: 15
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'bottom',
-                            labels: {
-                                color: '#e2e8f0',
-                                padding: 20,
-                                font: {
-                                    size: 11
-                                }
-                            }
-                        },
-                        tooltip: {
-                            backgroundColor: 'rgba(10, 25, 47, 0.9)',
-                            titleColor: '#d4af37',
-                            bodyColor: '#e2e8f0',
-                            borderColor: 'rgba(212, 175, 55, 0.5)',
-                            borderWidth: 1,
-                            callbacks: {
-                                label: function(context) {
-                                    return `${context.label}: ${context.parsed}%`;
-                                }
-                            }
-                        }
-                    },
-                    cutout: '65%'
-                }
-            });
+        function init() {
+            renderProducts();
+            setupEventListeners();
+            updateCartDisplay();
         }
 
-        function updateClock() {
-            const now = new Date();
-            document.getElementById('clock').innerHTML = `
-                <i class="fas fa-clock mr-2"></i> ${now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
-            `;
-        }
-        
-        // Navigation Functions
-        function switchView(viewName) {
-            // Hide all views
-            ['register', 'inventory', 'analytics', 'history'].forEach(v => {
-                document.getElementById(`view-${v}`).classList.add('hidden');
-            });
+        // Render products to the UI
+        function renderProducts() {
+            productsList.innerHTML = '';
             
-            // Show selected view
-            document.getElementById(`view-${viewName}`).classList.remove('hidden');
-            
-            // Update desktop navigation active state
-            document.querySelectorAll('.nav-menu-item').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            
-            // Find and activate the matching menu item
-            const activeMenuItem = Array.from(document.querySelectorAll('.nav-menu-item')).find(btn => 
-                btn.innerHTML.toLowerCase().includes(viewName.toLowerCase())
-            );
-            if (activeMenuItem) {
-                activeMenuItem.classList.add('active');
-            }
-            
-            // Update mobile navigation active state
-            document.querySelectorAll('.nav-btn').forEach(btn => {
-                btn.classList.add('text-gray-400');
-                btn.classList.remove('text-accentGold', 'text-white', 'bg-gradient-to-br', 'from-yellow-500', 'to-yellow-700');
-            });
-            
-            // Special handling for mobile active states
-            if (viewName === 'register') {
-                document.querySelector('.nav-btn:nth-child(1)').classList.add('text-accentGold');
-                document.querySelector('.nav-btn:nth-child(1)').classList.remove('text-gray-400');
-            } else if (viewName === 'inventory') {
-                document.querySelector('.nav-btn:nth-child(2)').classList.add('text-accentGold');
-                document.querySelector('.nav-btn:nth-child(2)').classList.remove('text-gray-400');
-            } else if (viewName === 'analytics') {
-                document.querySelector('.nav-btn:nth-child(4)').classList.add('text-accentGold');
-                document.querySelector('.nav-btn:nth-child(4)').classList.remove('text-gray-400');
-            } else if (viewName === 'history') {
-                document.querySelector('.nav-btn:nth-child(5)').classList.add('text-accentGold');
-                document.querySelector('.nav-btn:nth-child(5)').classList.remove('text-gray-400');
-            }
-            
-            // Close mobile menu if open
-            if (window.innerWidth < 768 && document.querySelector('.sidebar').classList.contains('active')) {
-                document.getElementById('menu-toggle').click();
-            }
-        }
-        
-        // Mobile menu setup
-        function setupMobileMenu() {
-            document.getElementById('menu-toggle').addEventListener('click', function() {
-                const sidebar = document.querySelector('.sidebar');
-                const icon = document.getElementById('menu-icon');
-                
-                if (sidebar.classList.contains('active')) {
-                    sidebar.classList.remove('active');
-                    icon.classList.remove('fa-times');
-                    icon.classList.add('fa-bars');
-                } else {
-                    sidebar.classList.add('active');
-                    icon.classList.remove('fa-bars');
-                    icon.classList.add('fa-times');
-                }
-            });
-            
-            // Close menu when clicking outside
-            document.addEventListener('click', function(event) {
-                const sidebar = document.querySelector('.sidebar');
-                const menuToggle = document.getElementById('menu-toggle');
-                
-                if (window.innerWidth < 768 && sidebar.classList.contains('active') && 
-                    !sidebar.contains(event.target) && !menuToggle.contains(event.target)) {
-                    sidebar.classList.remove('active');
-                    document.getElementById('menu-icon').classList.remove('fa-times');
-                    document.getElementById('menu-icon').classList.add('fa-bars');
-                }
-            });
-        }
-        
-        // Product Functions
-        function renderProducts(category) {
-            const grid = document.getElementById('product-grid');
-            grid.innerHTML = '';
-            
-            const filteredProducts = category === 'all' 
-                ? inventory 
-                : inventory.filter(p => p.category === category);
-            
-            filteredProducts.forEach(product => {
-                const stockStatus = product.stock === 0 ? 'bg-red-900/50 text-red-400' : 
-                                   product.stock < 5 ? 'bg-orange-900/50 text-orange-400' : 
-                                   'bg-green-900/50 text-green-400';
-                const stockText = product.stock === 0 ? 'Out of Stock' : 
-                                 product.stock < 5 ? 'Low Stock' : 'In Stock';
-                
-                grid.innerHTML += `
-                    <div class="product-card rounded-xl p-4 flex flex-col justify-between cursor-pointer hover:border-accentGold/50" onclick="addToCart(${product.id})">
-                        <div class="flex justify-between items-start">
-                            <div>
-                                <div class="font-bold text-white mb-1">${product.name}</div>
-                                <div class="text-xs text-blue-200">${product.category.charAt(0).toUpperCase() + product.category.slice(1)}</div>
-                            </div>
-                            <div class="${stockStatus} text-xs px-2 py-0.5 rounded-full">${stockText}</div>
-                        </div>
-                        <div class="mt-3 flex justify-between items-end">
-                            <div>
-                                <div class="text-2xl font-bold text-accentGold">KSh ${product.price.toLocaleString()}</div>
-                                <div class="text-xs text-gray-400 mt-1">Stock: <span class="${product.stock === 0 ? 'text-red-400' : product.stock < 5 ? 'text-orange-400' : 'text-green-400'}">${product.stock}</span></div>
-                            </div>
-                            <div class="w-10 h-10 rounded-full bg-oceanBlue/50 flex items-center justify-center text-accentGold">
-                                <i class="fas ${product.icon} text-lg"></i>
-                            </div>
-                        </div>
-                    </div>
+            products.forEach(product => {
+                const productCard = document.createElement('div');
+                productCard.className = 'product-card';
+                productCard.innerHTML = `
+                    <div class="product-image">${product.image}</div>
+                    <div class="product-name">${product.name}</div>
+                    <div class="product-price">KES ${product.price.toLocaleString()}</div>
                 `;
+                productCard.addEventListener('click', () => addToCart(product));
+                productsList.appendChild(productCard);
             });
         }
-        
-        function filterProducts(category) {
-            document.querySelectorAll('.category-badge').forEach(b => {
-                b.classList.remove('bg-accentGold', 'text-deepBlue');
-                b.classList.add('bg-oceanBlue', 'text-white');
-            });
-            event.target.classList.remove('bg-oceanBlue', 'text-white');
-            event.target.classList.add('bg-accentGold', 'text-deepBlue');
-            
-            renderProducts(category);
-        }
-        
-        // Cart Functions
-        function addToCart(productId) {
-            const product = inventory.find(p => p.id === productId);
-            
-            if (product.stock === 0) {
-                alert("This item is out of stock!");
-                return;
-            }
-            
-            const existingItem = cart.find(item => item.id === productId);
+
+        // Add product to cart
+        function addToCart(product) {
+            const existingItem = cart.find(item => item.id === product.id);
             
             if (existingItem) {
-                if (existingItem.qty >= product.stock) {
-                    alert("Maximum available stock reached!");
-                    return;
-                }
-                existingItem.qty++;
+                existingItem.quantity += 1;
             } else {
                 cart.push({
                     id: product.id,
                     name: product.name,
                     price: product.price,
-                    qty: 1,
-                    category: product.category
+                    quantity: 1
                 });
             }
             
             updateCartDisplay();
-            updateCartBar();
         }
-        
-        function updateCartDisplay() {
-            const container = document.getElementById('cart-items-container');
-            const itemCount = document.getElementById('cart-item-count');
-            const subtotalEl = document.getElementById('cart-subtotal');
-            const discountEl = document.getElementById('cart-discount');
-            const taxEl = document.getElementById('cart-tax');
-            const totalEl = document.getElementById('cart-total');
-            
-            // Update item count
-            itemCount.textContent = cart.reduce((sum, item) => sum + item.qty, 0);
-            
-            if (cart.length === 0) {
-                container.innerHTML = `
-                    <div class="text-center py-12 text-gray-400">
-                        <i class="fas fa-shopping-cart text-4xl mb-4 block opacity-50"></i>
-                        <p class="text-lg font-medium mb-2">Your cart is empty</p>
-                        <p>Add items from the product grid to start your order</p>
-                    </div>
-                `;
-                
-                subtotalEl.textContent = "KSh 0";
-                discountEl.textContent = "-KSh 0";
-                taxEl.textContent = "KSh 0";
-                totalEl.textContent = "KSh 0";
-                return;
-            }
-            
-            // Calculate totals
-            const subtotal = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
-            const discount = subtotal * 0.1; // 10% discount
-            const tax = (subtotal - discount) * 0.16; // 16% tax
-            const total = subtotal - discount + tax;
-            
-            // Update price displays
-            subtotalEl.textContent = `KSh ${subtotal.toLocaleString()}`;
-            discountEl.textContent = `-KSh ${discount.toLocaleString()}`;
-            taxEl.textContent = `KSh ${tax.toLocaleString()}`;
-            totalEl.textContent = `KSh ${total.toLocaleString()}`;
-            
-            // Render cart items
-            container.innerHTML = '';
-            cart.forEach(item => {
-                const product = inventory.find(p => p.id === item.id);
-                container.innerHTML += `
-                    <div class="flex justify-between items-start bg-oceanBlue/20 p-4 rounded-xl border border-blue-900/30">
-                        <div class="flex-1">
-                            <div class="font-bold text-white text-lg">${item.name}</div>
-                            <div class="text-blue-200 mt-1 flex items-center">
-                                <span class="text-accentGold font-bold">KSh ${item.price.toLocaleString()}</span>
-                                <span class="mx-2 text-gray-500">•</span>
-                                <span>${item.qty} × KSh ${item.price.toLocaleString()}</span>
-                            </div>
-                        </div>
-                        <div class="flex flex-col items-end ml-4">
-                            <button onclick="updateCartItemQuantity(${item.id}, -1)" class="w-8 h-8 rounded-full bg-red-600/20 text-red-400 font-bold hover:bg-red-600/40 transition">-</button>
-                            <div class="font-bold text-lg my-1 text-accentGold">${item.qty}</div>
-                            <button onclick="updateCartItemQuantity(${item.id}, 1)" class="w-8 h-8 rounded-full bg-green-600/20 text-green-400 font-bold hover:bg-green-600/40 transition">+</button>
-                        </div>
-                    </div>
-                `;
-            });
-        }
-        
-        function updateCartItemQuantity(itemId, change) {
-            const item = cart.find(i => i.id === itemId);
-            const product = inventory.find(p => p.id === itemId);
-            
-            if (!item || !product) return;
-            
-            if (change === -1) {
-                item.qty--;
-                if (item.qty <= 0) {
-                    cart = cart.filter(i => i.id !== itemId);
-                }
-            } else if (change === 1) {
-                if (item.qty < product.stock) {
-                    item.qty++;
-                } else {
-                    alert("Maximum available stock reached!");
-                }
-            }
-            
-            updateCartDisplay();
-            updateCartBar();
-        }
-        
-        function updateCartBar() {
-            const totalCount = cart.reduce((sum, item) => sum + item.qty, 0);
-            const totalValue = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
-            
-            document.getElementById('cart-count-float').textContent = totalCount;
-            document.getElementById('cart-total-float').textContent = `KSh ${totalValue.toLocaleString()}`;
-            document.getElementById('cart-badge-mobile').textContent = totalCount;
-            
-            const bar = document.getElementById('mobile-cart-bar');
-            if (totalCount > 0) {
-                bar.classList.remove('translate-y-24');
-                bar.classList.add('glow-effect');
-            } else {
-                bar.classList.add('translate-y-24');
-                bar.classList.remove('glow-effect');
-            }
-        }
-        
-        function openCartModal() {
-            updateCartDisplay();
-            document.getElementById('cart-modal').classList.remove('hidden');
-            document.body.style.overflow = 'hidden';
-        }
-        
-        function closeCartModal() {
-            document.getElementById('cart-modal').classList.add('hidden');
-            document.body.style.overflow = 'auto';
-        }
-        
-        function setPaymentMethod(method) {
-            currentPaymentMethod = method;
-            document.querySelectorAll('.pay-method').forEach(btn => {
-                btn.classList.remove('border-accentGold', 'bg-gradient-to-br', 'from-yellow-600', 'to-yellow-800', 'text-deepBlue');
-                btn.classList.add('border-blue-700', 'text-blue-300');
-            });
-            
-            if (method === 'cash') {
-                document.getElementById('btn-cash').classList.add('border-accentGold', 'bg-gradient-to-br', 'from-yellow-600', 'to-yellow-800', 'text-deepBlue');
-                document.getElementById('btn-cash').classList.remove('border-blue-700', 'text-blue-300');
-            } else if (method === 'mpesa') {
-                document.getElementById('btn-mpesa').classList.add('border-accentGold', 'bg-gradient-to-br', 'from-yellow-600', 'to-yellow-800', 'text-deepBlue');
-                document.getElementById('btn-mpesa').classList.remove('border-blue-700', 'text-blue-300');
-            }
-        }
-        
-        // Sale processing
-        function completeSale() {
-            if (cart.length === 0) {
-                alert("Your cart is empty. Please add items before completing the sale.");
-                return;
-            }
-            
-            // Generate transaction ID
-            const transactionId = 'WB-' + Date.now().toString().slice(-5);
-            const total = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
-            
-            // Prepare WhatsApp message
-            let itemDetails = "";
-            cart.forEach(item => {
-                itemDetails += `• ${item.name} (x${item.qty}) - KSh ${(item.price * item.qty).toLocaleString()}\n`;
-            });
-            
-            const whatsappMessage = `
-*WALKERBAY HOTELS - SALES RECEIPT*
-*Transaction:* ${transactionId}
-*Date:* ${new Date().toLocaleString()}
-*Items:*
-${itemDetails}
-*TOTAL:* KSh ${total.toLocaleString()}
-*Payment Method:* ${currentPaymentMethod === 'cash' ? 'Cash' : 'M-Pesa'}
 
-Thank you for your business!
-            `.trim();
+        // Update cart display
+        function updateCartDisplay() {
+            cartItems.innerHTML = '';
             
-            // Format phone number for WhatsApp (example number)
-            const phoneNumber = '254700346672';
+            if (cart.length === 0) {
+                cartItems.innerHTML = '<div class="empty-cart">Your cart is empty</div>';
+                cartCount.textContent = '0 items';
+                cartTotal.textContent = 'KES 0.00';
+                return;
+            }
             
-            // Open WhatsApp with the message
-            window.open(`https://wa.me/${phoneNumber}?text=${encodeURIComponent(whatsappMessage)}`, '_blank');
+            let total = 0;
             
-            // Update inventory
-            cart.forEach(cartItem => {
-                const inventoryItem = inventory.find(item => item.id === cartItem.id);
-                if (inventoryItem) {
-                    inventoryItem.stock -= cartItem.qty;
-                }
+            cart.forEach((item, index) => {
+                const itemTotal = item.price * item.quantity;
+                total += itemTotal;
+                
+                const cartItem = document.createElement('div');
+                cartItem.className = 'cart-item';
+                cartItem.innerHTML = `
+                    <div class="cart-item-details">
+                        <div class="cart-item-name">${item.name}</div>
+                        <div class="cart-item-price">KES ${item.price.toLocaleString()}</div>
+                        <div class="cart-item-quantity">
+                            <button class="quantity-btn decrease" data-index="${index}">-</button>
+                            <span>${item.quantity}</span>
+                            <button class="quantity-btn increase" data-index="${index}">+</button>
+                        </div>
+                    </div>
+                    <div style="text-align: right; min-width: 120px;">
+                        <div>KES ${itemTotal.toLocaleString()}</div>
+                        <button class="print-btn" style="margin-top: 5px;" title="Print Item Label">
+                            <i class="fas fa-print"></i>
+                        </button>
+                    </div>
+                `;
+                cartItems.appendChild(cartItem);
             });
             
-            // Add to transaction history
-            const transaction = {
-                id: transactionId,
-                date: new Date().toISOString(),
-                items: [...cart],
-                customer: "Walk-in Customer",
-                phone: "",
-                staff: "Victor Olal",
-                staffInitials: "VO",
-                paymentMethod: currentPaymentMethod,
-                total: total
-            };
+            cartCount.textContent = `${cart.length} items`;
+            cartTotal.textContent = `KES ${total.toLocaleString()}`;
             
-            sampleTransactions.unshift(transaction);
-            renderTransactionHistory();
-            renderInventoryTable();
+            // Add event listeners to quantity buttons
+            document.querySelectorAll('.decrease').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const index = parseInt(btn.getAttribute('data-index'));
+                    if (cart[index].quantity > 1) {
+                        cart[index].quantity--;
+                    } else {
+                        cart.splice(index, 1);
+                    }
+                    updateCartDisplay();
+                });
+            });
             
-            // Clear cart and close modal
+            document.querySelectorAll('.increase').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const index = parseInt(btn.getAttribute('data-index'));
+                    cart[index].quantity++;
+                    updateCartDisplay();
+                });
+            });
+        }
+
+        // Clear cart
+        function clearCart() {
             cart = [];
             updateCartDisplay();
-            updateCartBar();
-            closeCartModal();
-            
-            // Show success message
-            alert(`Sale completed successfully! Receipt ID: ${transactionId}`);
         }
-        
-        // Inventory Functions
-        function renderInventoryTable() {
-            const tbody = document.getElementById('inventory-table-body');
-            tbody.innerHTML = '';
+
+        // Print receipt
+        function printReceipt() {
+            // Populate receipt with cart data
+            receiptItems.innerHTML = '';
+            let total = 0;
             
-            inventory.forEach(item => {
-                const stockStatus = item.stock === 0 ? 
-                    '<span class="bg-red-900/50 text-red-400 px-3 py-1 rounded-full text-sm">Out of Stock</span>' : 
-                    item.stock < 5 ? 
-                    '<span class="bg-orange-900/50 text-orange-400 px-3 py-1 rounded-full text-sm">Low Stock</span>' : 
-                    '<span class="bg-green-900/50 text-green-400 px-3 py-1 rounded-full text-sm">In Stock</span>';
+            cart.forEach(item => {
+                const itemTotal = item.price * item.quantity;
+                total += itemTotal;
                 
-                tbody.innerHTML += `
-                    <tr class="border-b border-blue-900/30 hover:bg-oceanBlue/20">
-                        <td class="p-4">
-                            <div class="font-bold text-white">${item.name}</div>
-                            <div class="text-xs text-blue-200">ID: ${item.category.toUpperCase().charAt(0)}-${item.id.toString().padStart(4, '0')}</div>
-                        </td>
-                        <td class="p-4">${item.category.charAt(0).toUpperCase() + item.category.slice(1)}</td>
-                        <td class="p-4 text-accentGold font-bold">KSh ${item.price.toLocaleString()}</td>
-                        <td class="p-4">${item.stock}</td>
-                        <td class="p-4">${stockStatus}</td>
-                        <td class="p-4 text-right">
-                            <div class="flex justify-end gap-2">
-                                <button class="w-8 h-8 rounded-full bg-darkGray hover:bg-gray-700 flex items-center justify-center text-blue-300">
-                                    <i class="fas fa-edit"></i>
-                                </button>
-                                <button class="w-8 h-8 rounded-full bg-darkGray hover:bg-gray-700 flex items-center justify-center text-green-400">
-                                    <i class="fas fa-plus"></i>
-                                </button>
-                                <button class="w-8 h-8 rounded-full bg-darkGray hover:bg-gray-700 flex items-center justify-center text-red-400">
-                                    <i class="fas fa-minus"></i>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${item.name}</td>
+                    <td>${item.quantity}</td>
+                    <td>KES ${item.price.toLocaleString()}</td>
+                    <td>KES ${itemTotal.toLocaleString()}</td>
                 `;
+                receiptItems.appendChild(row);
             });
-        }
-        
-        function openAddItemModal() {
-            document.getElementById('add-item-modal').classList.remove('hidden');
-            document.body.style.overflow = 'hidden';
-            document.getElementById('new-item-name').focus();
-        }
-        
-        function closeAddItemModal() {
-            document.getElementById('add-item-modal').classList.add('hidden');
-            document.body.style.overflow = 'auto';
-        }
-        
-        function saveNewItem() {
-            const name = document.getElementById('new-item-name').value.trim();
-            const price = parseFloat(document.getElementById('new-item-price').value);
-            const stock = parseInt(document.getElementById('new-item-stock').value);
-            const category = document.getElementById('new-item-category').value;
             
-            if (!name || isNaN(price) || isNaN(stock) || price <= 0 || stock < 0) {
-                alert("Please fill in all fields with valid values.");
+            receiptTotal.textContent = total.toLocaleString();
+            
+            // Generate PDF
+            const element = receipt;
+            const opt = {
+                margin: 10,
+                filename: 'WalkerBay_Receipt.pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2 },
+                jsPDF: { unit: 'mm', format: 'a5', orientation: 'portrait' }
+            };
+            
+            // New Promise-based usage:
+            html2pdf().set(opt).from(element).save();
+        }
+
+        // Checkout and send to WhatsApp
+        function checkout() {
+            if (cart.length === 0) {
+                alert('Your cart is empty. Please add items before checkout.');
                 return;
             }
             
-            // Determine icon based on category
-            let icon = "fa-box";
-            if (category === "accommodation") icon = "fa-bed";
-            else if (category === "food") icon = "fa-utensils";
-            else if (category === "excursion") icon = "fa-ship";
-            else if (category === "merchandise") icon = "fa-tag";
+            // Simulate transaction ID
+            const transactionId = 'TXN-' + Math.floor(1000 + Math.random() * 9000);
+            const now = new Date();
             
-            // Add new item to inventory
-            const newItem = {
-                id: inventory.length > 0 ? Math.max(...inventory.map(item => item.id)) + 1 : 1,
-                name: name,
-                price: price,
-                stock: stock,
-                category: category,
-                icon: icon
-            };
+            // Prepare receipt data
+            let receiptText = `*WALKERBAY HOTELS LIMITED*\n`;
+            receiptText += `Muhuru-Bay, Migori County, Kenya\n`;
+            receiptText += `"Where Hospitality Meets Adventure"\n\n`;
+            receiptText += `*RECEIPT*\n`;
+            receiptText += `Transaction ID: ${transactionId}\n`;
+            receiptText += `Date: ${now.toLocaleDateString('en-KE')}\n`;
+            receiptText += `Time: ${now.toLocaleTimeString('en-KE', { hour: '2-digit', minute: '2-digit' })}\n`;
+            receiptText += `Staff: John Doe\n\n`;
+            receiptText += `ITEMS:\n`;
             
-            inventory.push(newItem);
-            renderProducts('all');
-            renderInventoryTable();
+            let total = 0;
             
-            // Close modal and reset form
-            closeAddItemModal();
-            document.getElementById('new-item-name').value = '';
-            document.getElementById('new-item-price').value = '';
-            document.getElementById('new-item-stock').value = '';
-            document.getElementById('new-item-category').value = 'accommodation';
-            
-            alert("New item added to inventory successfully!");
-        }
-        
-        // Transaction History Functions
-        function renderTransactionHistory() {
-            const tbody = document.getElementById('history-table-body');
-            tbody.innerHTML = '';
-            
-            sampleTransactions.slice(0, 10).forEach(tx => {
-                const dateObj = new Date(tx.date);
-                const dateStr = dateObj.toLocaleDateString();
-                const timeStr = dateObj.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-                const paymentMethodDisplay = tx.paymentMethod === 'cash' ? 
-                    `<span class="bg-green-900/50 text-green-400 px-3 py-1 rounded-full text-sm flex items-center">
-                        <i class="fas fa-money-bill-wave mr-1"></i> Cash
-                    </span>` : 
-                    tx.paymentMethod === 'mpesa' ?
-                    `<span class="bg-blue-900/50 text-blue-400 px-3 py-1 rounded-full text-sm flex items-center">
-                        <i class="fas fa-mobile-alt mr-1"></i> M-Pesa
-                    </span>` :
-                    `<span class="bg-amber-900/50 text-amber-400 px-3 py-1 rounded-full text-sm flex items-center">
-                        <i class="fas fa-credit-card mr-1"></i> Card
-                    </span>`;
-                
-                let itemsHtml = '';
-                tx.items.slice(0, 2).forEach(item => {
-                    itemsHtml += `<div class="font-bold text-white">${item.name} (x${item.qty})</div>`;
-                });
-                
-                if (tx.items.length > 2) {
-                    itemsHtml += `<div class="text-xs text-gray-500 mt-1">${tx.items.length - 2} more item${tx.items.length > 3 ? 's' : ''}</div>`;
-                }
-                
-                tbody.innerHTML += `
-                    <tr class="border-b border-blue-900/30 hover:bg-oceanBlue/20">
-                        <td class="p-4 font-mono font-bold text-accentGold">${tx.id}</td>
-                        <td class="p-4">${dateStr}<br><span class="text-sm text-gray-400">${timeStr}</span></td>
-                        <td class="p-4">
-                            ${itemsHtml}
-                            <div class="text-xs text-gray-500 mt-1">${tx.items.length} items total</div>
-                        </td>
-                        <td class="p-4">
-                            <div class="font-bold text-white">${tx.customer}</div>
-                            <div class="text-sm text-blue-200">${tx.phone}</div>
-                        </td>
-                        <td class="p-4">
-                            <div class="flex items-center">
-                                <div class="w-8 h-8 rounded-full bg-gradient-to-br from-yellow-400 to-yellow-600 flex items-center justify-center text-deepBlue font-bold mr-2 text-xs">${tx.staffInitials}</div>
-                                <span class="text-sm">${tx.staff}</span>
-                            </div>
-                        </td>
-                        <td class="p-4">${paymentMethodDisplay}</td>
-                        <td class="p-4 text-right font-bold text-2xl text-accentGold">KSh ${tx.total.toLocaleString()}</td>
-                        <td class="p-4 text-center">
-                            <div class="flex justify-center gap-2">
-                                <button class="w-10 h-10 rounded-full bg-darkGray hover:bg-gray-700 flex items-center justify-center text-blue-300" onclick="printReceipt('${tx.id}')">
-                                    <i class="fas fa-print"></i>
-                                </button>
-                                <button class="w-10 h-10 rounded-full bg-darkGray hover:bg-gray-700 flex items-center justify-center text-green-400" onclick="sendWhatsAppReceipt('${tx.id}')">
-                                    <i class="fas fa-whatsapp"></i>
-                                </button>
-                                <button class="w-10 h-10 rounded-full bg-darkGray hover:bg-gray-700 flex items-center justify-center text-purple-400">
-                                    <i class="fas fa-eye"></i>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                `;
-            });
-        }
-        
-        // Receipt Functions
-        function printSampleReceipt() {
-            printReceipt("WB-89275");
-        }
-        
-        function printReceipt(transactionId) {
-            const tx = sampleTransactions.find(t => t.id === transactionId);
-            if (!tx) return;
-            
-            // Create print window
-            const printWindow = window.open('', '_blank', 'width=400,height=600');
-            
-            // Format date and time
-            const dateObj = new Date(tx.date);
-            const dateStr = dateObj.toLocaleDateString();
-            const timeStr = dateObj.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-            
-            // Generate receipt items HTML
-            let itemsHtml = '';
-            tx.items.forEach(item => {
-                const lineTotal = item.price * item.qty;
-                itemsHtml += `
-                    <tr>
-                        <td style="padding: 4px 0;">${item.name}</td>
-                        <td style="padding: 4px 0; text-align: center;">${item.qty}</td>
-                        <td style="padding: 4px 0; text-align: right;">${lineTotal.toLocaleString()}</td>
-                    </tr>
-                `;
+            cart.forEach(item => {
+                const itemTotal = item.price * item.quantity;
+                total += itemTotal;
+                receiptText += `- ${item.name} (x${item.quantity}) KES ${itemTotal.toLocaleString()}\n`;
             });
             
-            // Calculate totals
-            const subtotal = tx.items.reduce((sum, item) => sum + (item.price * item.qty), 0);
-            const discount = subtotal * 0.1; // 10% discount
-            const tax = (subtotal - discount) * 0.16; // 16% tax
-            const total = subtotal - discount + tax;
+            receiptText += `\nTOTAL: KES ${total.toLocaleString()}\n\n`;
+            receiptText += `Thank you for your visit!\n`;
+            receiptText += `Visit us again at Muhuru-Bay\n`;
+            receiptText += `www.walkerbayhotels.co.ke`;
             
-            // Build receipt content
-            const receiptContent = `
-                <html>
-                <head>
-                    <title>WalkerBay Receipt: ${transactionId}</title>
-                    <style>
-                        body { 
-                            font-family: 'Courier New', monospace; 
-                            font-size: 14px; 
-                            margin: 20px; 
-                            color: #000; 
-                            line-height: 1.4;
-                        }
-                        .header { text-align: center; margin-bottom: 15px; border-bottom: 1px dashed #000; padding-bottom: 10px; }
-                        .hotel-name { font-size: 20px; font-weight: bold; color: #0a192f; }
-                        .contact { font-size: 12px; color: #555; margin-top: 3px; }
-                        .receipt-info { margin: 15px 0; }
-                        .divider { border-bottom: 1px dashed #000; margin: 10px 0; }
-                        table { width: 100%; border-collapse: collapse; margin: 10px 0; }
-                        th, td { padding: 5px 0; text-align: left; }
-                        .total-row { font-weight: bold; border-top: 1px dashed #000; margin-top: 5px; }
-                        .footer { text-align: center; margin-top: 20px; font-size: 12px; color: #555; }
-                        .thank-you { font-weight: bold; color: #0a192f; margin: 5px 0; }
-                    </style>
-                </head>
-                <body>
-                    <div class="header">
-                        <div class="hotel-name">WALKERBAY HOTELS</div>
-                        <div class="contact">Muhuru Bay, Kenya</div>
-                        <div class="contact">Tel: +254 700 346 672 | walkerbay@example.com</div>
-                    </div>
-                    
-                    <div class="receipt-info">
-                        <div>Receipt No: ${transactionId}</div>
-                        <div>Date: ${dateStr} ${timeStr}</div>
-                        <div>Cashier: ${tx.staff}</div>
-                        <div>Terminal: POS-01 (Main Reception)</div>
-                    </div>
-                    
-                    <div class="divider"></div>
-                    
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Item</th>
-                                <th style="text-align: right;">Qty</th>
-                                <th style="text-align: right;">Price</th>
-                                <th style="text-align: right;">Total</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${itemsHtml}
-                        </tbody>
-                    </table>
-                    
-                    <div class="divider"></div>
-                    
-                    <table>
-                        <tr>
-                            <td>Subtotal:</td>
-                            <td style="text-align: right;">KSh ${subtotal.toLocaleString()}</td>
-                        </tr>
-                        <tr>
-                            <td>Discount (10%):</td>
-                            <td style="text-align: right; color: green;">-KSh ${discount.toLocaleString()}</td>
-                        </tr>
-                        <tr>
-                            <td>Tax (16%):</td>
-                            <td style="text-align: right;">KSh ${tax.toLocaleString()}</td>
-                        </tr>
-                        <tr class="total-row">
-                            <td>TOTAL:</td>
-                            <td style="text-align: right; font-size: 18px; color: #0a192f;">KSh ${total.toLocaleString()}</td>
-                        </tr>
-                        <tr>
-                            <td>Payment Method:</td>
-                            <td style="text-align: right;">${tx.paymentMethod === 'cash' ? 'Cash' : tx.paymentMethod === 'mpesa' ? 'M-Pesa' : 'Card'}</td>
-                        </tr>
-                    </table>
-                    
-                    <div class="divider"></div>
-                    
-                    <div class="footer">
-                        <div class="thank-you">Thank you for your stay!</div>
-                        <div>WalkerBay Hotels is committed to exceptional service</div>
-                        <div>www.walkerbay-hotels.co.ke</div>
-                        <div style="margin-top: 15px; font-style: italic;">"Where the sea meets serenity"</div>
-                    </div>
-                    
-                    <script>
-                        window.onload = function() {
-                            window.print();
-                            setTimeout(function() {
-                                window.close();
-                            }, 1000);
-                        }
-                    </script>
-                </body>
-                </html>
-            `;
+            // Save transaction to history (simulated)
+            saveTransaction(transactionId, total);
             
-            // Write content and close
-            printWindow.document.write(receiptContent);
-            printWindow.document.close();
+            // Clear cart
+            cart = [];
+            updateCartDisplay();
+            
+            // Open WhatsApp with pre-filled message
+            const encodedText = encodeURIComponent(receiptText);
+            const whatsappUrl = `https://wa.me/254700342672?text=${encodedText}`;
+            
+            // Open in new tab
+            window.open(whatsappUrl, '_blank');
+            
+            // Show success message
+            alert('Transaction completed! Receipt sent to WhatsApp.');
         }
-        
-        function sendWhatsAppReceipt(transactionId) {
-            const tx = sampleTransactions.find(t => t.id === transactionId);
-            if (!tx) return;
-            
-            let itemDetails = "";
-            tx.items.forEach(item => {
-                itemDetails += `• ${item.name} (x${item.qty}) - KSh ${(item.price * item.qty).toLocaleString()}\n`;
-            });
-            
-            const subtotal = tx.items.reduce((sum, item) => sum + (item.price * item.qty), 0);
-            const discount = subtotal * 0.1; // 10% discount
-            const tax = (subtotal - discount) * 0.16; // 16% tax
-            const total = subtotal - discount + tax;
-            
-            const whatsappMessage = `
-*WALKERBAY HOTELS - SALES RECEIPT*
-*Transaction:* ${transactionId}
-*Date:* ${new Date(tx.date).toLocaleString()}
-*Items:*
-${itemDetails}
-*Subtotal:* KSh ${subtotal.toLocaleString()}
-*Discount (10%):* -KSh ${discount.toLocaleString()}
-*Tax (16%):* KSh ${tax.toLocaleString()}
-*TOTAL:* KSh ${total.toLocaleString()}
-*Payment Method:* ${tx.paymentMethod === 'cash' ? 'Cash' : tx.paymentMethod === 'mpesa' ? 'M-Pesa' : 'Card'}
 
-Thank you for your business!
-            `.trim();
-            
-            // Use the phone number from the transaction if available, otherwise use a default
-            const phoneNumber = tx.phone ? tx.phone.replace(/\D/g, '') : '254700346672';
-            
-            window.open(`https://wa.me/${phoneNumber}?text=${encodeURIComponent(whatsappMessage)}`, '_blank');
+        // Save transaction to history (simulated)
+        function saveTransaction(transactionId, total) {
+            // In a real app, this would save to a database
+            console.log(`Transaction ${transactionId} saved with total KES ${total}`);
         }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            // Tab navigation
+            tabs.forEach(tab => {
+                tab.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    
+                    // Update active tab in navigation
+                    tabs.forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    
+                    // Show corresponding content
+                    const tabId = tab.getAttribute('data-tab');
+                    tabContents.forEach(content => {
+                        content.classList.remove('active');
+                        if (content.id === tabId) {
+                            content.classList.add('active');
+                        }
+                    });
+                });
+            });
+            
+            // Cart actions
+            clearCartBtn.addEventListener('click', clearCart);
+            printReceiptBtn.addEventListener('click', printReceipt);
+            checkoutBtn.addEventListener('click', checkout);
+            
+            // Print buttons in history and inventory
+            document.querySelectorAll('.print-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const row = this.closest('tr');
+                    alert(`Printing receipt for transaction: ${row.cells[0].textContent}`);
+                });
+            });
+        }
+
+        // Initialize the app when DOM is loaded
+        document.addEventListener('DOMContentLoaded', init);
     </script>
 </body>
 </html>
