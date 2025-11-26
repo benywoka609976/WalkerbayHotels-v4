@@ -1,0 +1,1496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>WalkerBay POS Pro - Enterprise Edition</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Mono&display=swap" rel="stylesheet">
+
+    <!-- Chart.js for Analytics -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        deepBlue: '#0a192f',
+                        oceanBlue: '#1a3a5f',
+                        softWhite: '#f8f9fa',
+                        accentGold: '#d4af37',
+                        success: '#10b981',
+                        warning: '#f59e0b',
+                        danger: '#ef4444',
+                        darkGray: '#1e293b'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['Space Mono', 'monospace'],
+                    },
+                    animation: {
+                        'spin-slow': 'spin 4s linear infinite'
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body { 
+            -webkit-tap-highlight-color: transparent; 
+            background: linear-gradient(135deg, #0c2461 0%, #1e3799 100%);
+            color: #e2e8f0;
+        }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .fade-in { animation: fadeIn 0.3s ease-out; }
+        @keyframes fadeIn { 
+            from { opacity: 0; transform: translateY(10px); } 
+            to { opacity: 1; transform: translateY(0); } 
+        }
+        
+        /* Modal Transitions */
+        .modal { transition: opacity 0.25s ease; }
+        .modal-content { transition: transform 0.25s ease; }
+        .modal.hidden { opacity: 0; pointer-events: none; }
+        .modal.hidden .modal-content { transform: scale(0.95); }
+        
+        /* Advanced UI Elements */
+        .dashboard-card {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(165, 180, 252, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .dashboard-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+            border-color: rgba(212, 175, 55, 0.3);
+        }
+        
+        .product-card {
+            background: rgba(26, 58, 95, 0.6);
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(100, 116, 139, 0.3);
+            transition: all 0.3s ease;
+        }
+        .product-card:hover {
+            transform: translateY(-3px);
+            border-color: rgba(212, 175, 55, 0.5);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        }
+        
+        .category-badge {
+            transition: all 0.2s ease;
+        }
+        .category-badge:hover {
+            transform: scale(1.05);
+        }
+        
+        .glow-effect {
+            box-shadow: 0 0 15px rgba(212, 175, 55, 0.5);
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(212, 175, 55, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(212, 175, 55, 0); }
+        }
+        
+        .server-status {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background-color: #10b981;
+            margin-right: 8px;
+        }
+        .server-status.offline {
+            background-color: #ef4444;
+            box-shadow: 0 0 8px #ef4444;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .nav-btn-text { display: none; }
+            .dashboard-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+        
+        @media (max-width: 480px) {
+            .dashboard-grid { grid-template-columns: 1fr; }
+            .server-status-text { display: none; }
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-gray-200 h-screen flex flex-col overflow-hidden font-sans">
+
+    <!-- System Status Bar -->
+    <div class="bg-darkGray text-xs py-1 px-4 flex justify-between items-center border-b border-blue-900/50">
+        <div class="flex items-center">
+            <span class="server-status"></span>
+            <span class="server-status-text">System operational • Backend connected</span>
+        </div>
+        <div class="flex items-center gap-4">
+            <span class="flex items-center">
+                <i class="fas fa-database mr-1 text-accentGold"></i>
+                <span>Synchronized</span>
+            </span>
+            <span class="flex items-center">
+                <i class="fas fa-user mr-1 text-accentGold"></i>
+                <span>Admin • Victor Olal</span>
+            </span>
+        </div>
+    </div>
+
+    <!-- HEADER -->
+    <header class="bg-deepBlue text-white h-16 flex items-center justify-between px-6 shadow-lg shrink-0 z-30 border-b border-blue-800">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 bg-accentGold rounded-xl flex items-center justify-center text-deepBlue font-bold text-lg font-serif shadow-lg">
+                <i class="fas fa-anchor"></i>
+            </div>
+            <div>
+                <h1 class="font-bold text-xl">WalkerBay POS Pro</h1>
+                <p class="text-xs text-blue-200 font-mono">Enterprise Edition v3.1</p>
+            </div>
+        </div>
+        <div class="flex items-center gap-6">
+            <div id="clock" class="text-lg font-bold font-mono bg-oceanBlue px-4 py-2 rounded-lg">
+                <i class="fas fa-clock mr-2"></i> 14:30
+            </div>
+            <div class="relative">
+                <button class="w-10 h-10 rounded-full bg-oceanBlue flex items-center justify-center hover:bg-accentGold transition">
+                    <i class="fas fa-bell text-lg"></i>
+                    <span class="absolute top-0 right-0 w-4 h-4 bg-red-500 rounded-full text-xs flex items-center justify-center">3</span>
+                </button>
+            </div>
+            <div class="flex flex-col items-end">
+                <div class="font-bold">Muhuru Bay Branch</div>
+                <div class="text-xs text-blue-200">Last sync: 42 sec ago</div>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN CONTENT -->
+    <main class="flex-1 overflow-hidden relative flex">
+        
+        <!-- Sidebar Navigation -->
+        <div class="w-64 bg-darkGray border-r border-blue-900/50 shrink-0 hidden md:block">
+            <div class="p-4">
+                <div class="text-accentGold font-bold text-sm mb-4 uppercase tracking-wider">Main Menu</div>
+                <nav class="space-y-1">
+                    <button onclick="switchView('register')" class="nav-menu-item active">
+                        <i class="fas fa-cash-register mr-3"></i> Point of Sale
+                    </button>
+                    <button onclick="switchView('inventory')" class="nav-menu-item">
+                        <i class="fas fa-boxes mr-3"></i> Inventory
+                    </button>
+                    <button onclick="switchView('analytics')" class="nav-menu-item">
+                        <i class="fas fa-chart-line mr-3"></i> Analytics
+                    </button>
+                    <button onclick="switchView('history')" class="nav-menu-item">
+                        <i class="fas fa-history mr-3"></i> Transactions
+                    </button>
+                    <button onclick="switchView('staff')" class="nav-menu-item">
+                        <i class="fas fa-users mr-3"></i> Staff Management
+                    </button>
+                    <button onclick="switchView('settings')" class="nav-menu-item">
+                        <i class="fas fa-cog mr-3"></i> System Settings
+                    </button>
+                </nav>
+            </div>
+            <div class="p-4 mt-6 border-t border-blue-900/50">
+                <div class="text-accentGold font-bold text-sm mb-2">Quick Actions</div>
+                <div class="grid grid-cols-2 gap-2">
+                    <button class="bg-deepBlue hover:bg-oceanBlue text-white text-xs py-2 rounded-md flex flex-col items-center justify-center">
+                        <i class="fas fa-qrcode text-lg mb-1"></i>
+                        <span>Scan Item</span>
+                    </button>
+                    <button class="bg-deepBlue hover:bg-oceanBlue text-white text-xs py-2 rounded-md flex flex-col items-center justify-center">
+                        <i class="fas fa-print text-lg mb-1"></i>
+                        <span>Print Receipt</span>
+                    </button>
+                    <button class="bg-deepBlue hover:bg-oceanBlue text-white text-xs py-2 rounded-md flex flex-col items-center justify-center">
+                        <i class="fas fa-chart-bar text-lg mb-1"></i>
+                        <span>Daily Report</span>
+                    </button>
+                    <button class="bg-deepBlue hover:bg-oceanBlue text-white text-xs py-2 rounded-md flex flex-col items-center justify-center">
+                        <i class="fas fa-cogs text-lg mb-1"></i>
+                        <span>Terminal Settings</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Navigation Drawer Toggle -->
+        <button id="menu-toggle" class="md:hidden fixed top-20 left-4 z-40 w-12 h-12 rounded-full bg-oceanBlue text-white shadow-lg flex items-center justify-center">
+            <i class="fas fa-bars text-xl"></i>
+        </button>
+
+        <!-- Content Area -->
+        <div class="flex-1 overflow-auto">
+            <!-- VIEW 1: SALES REGISTER -->
+            <div id="view-register" class="h-full p-4 fade-in">
+                <!-- Search & Filters -->
+                <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6 gap-4">
+                    <div class="relative flex-1 max-w-md">
+                        <input type="text" placeholder="Search products, categories or scan barcode..." class="w-full bg-darkGray border border-blue-900/50 rounded-lg py-3 px-4 pl-10 text-white placeholder-gray-400 focus:ring-2 focus:ring-accentGold focus:border-transparent">
+                        <i class="fas fa-search absolute left-3 top-3.5 text-gray-400"></i>
+                    </div>
+                    <div class="flex flex-wrap gap-2">
+                        <button class="bg-oceanBlue hover:bg-deepBlue text-white px-4 py-2 rounded-lg flex items-center">
+                            <i class="fas fa-filter mr-2"></i> Filters
+                        </button>
+                        <button class="bg-accentGold hover:bg-yellow-600 text-deepBlue px-4 py-2 rounded-lg flex items-center">
+                            <i class="fas fa-plus mr-2"></i> New Item
+                        </button>
+                        <button class="bg-green-700 hover:bg-green-800 text-white px-4 py-2 rounded-lg flex items-center">
+                            <i class="fas fa-qrcode mr-2"></i> Scan
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Category Filter -->
+                <div class="bg-darkGray rounded-xl p-3 mb-6 border border-blue-900/50">
+                    <div class="flex overflow-x-auto no-scrollbar space-x-2 pb-1">
+                        <button onclick="filterProducts('all')" class="category-badge active px-4 py-2 bg-accentGold text-deepBlue rounded-full font-bold text-sm whitespace-nowrap transition">All Products</button>
+                        <button onclick="filterProducts('accommodation')" class="category-badge px-4 py-2 bg-oceanBlue text-white rounded-full font-bold text-sm whitespace-nowrap transition">Accommodation</button>
+                        <button onclick="filterProducts('food')" class="category-badge px-4 py-2 bg-oceanBlue text-white rounded-full font-bold text-sm whitespace-nowrap transition">Food & Beverage</button>
+                        <button onclick="filterProducts('excursion')" class="category-badge px-4 py-2 bg-oceanBlue text-white rounded-full font-bold text-sm whitespace-nowrap transition">Excursions</button>
+                        <button onclick="filterProducts('merchandise')" class="category-badge px-4 py-2 bg-oceanBlue text-white rounded-full font-bold text-sm whitespace-nowrap transition">Merchandise</button>
+                        <button class="category-badge px-4 py-2 bg-gray-700 text-gray-300 rounded-full font-bold text-sm whitespace-nowrap transition">Promotions</button>
+                    </div>
+                </div>
+
+                <!-- Product Grid -->
+                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 mb-24">
+                    <!-- Products will be injected here by JS -->
+                    <div class="product-card rounded-xl p-4 flex flex-col justify-between cursor-pointer hover:border-accentGold/50" onclick="addToCart(1)">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <div class="font-bold text-white mb-1">Standard Room</div>
+                                <div class="text-xs text-blue-200">Accommodation</div>
+                            </div>
+                            <div class="bg-green-900/50 text-green-400 text-xs px-2 py-0.5 rounded-full">In Stock</div>
+                        </div>
+                        <div class="mt-3 flex justify-between items-end">
+                            <div>
+                                <div class="text-2xl font-bold text-accentGold">KSh 1,500</div>
+                                <div class="text-xs text-gray-400 mt-1">Stock: <span class="text-green-400">12</span></div>
+                            </div>
+                            <div class="w-10 h-10 rounded-full bg-oceanBlue/50 flex items-center justify-center text-accentGold">
+                                <i class="fas fa-bed text-lg"></i>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="product-card rounded-xl p-4 flex flex-col justify-between cursor-pointer hover:border-accentGold/50" onclick="addToCart(2)">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <div class="font-bold text-white mb-1">Suite Room</div>
+                                <div class="text-xs text-blue-200">Accommodation</div>
+                            </div>
+                            <div class="bg-green-900/50 text-green-400 text-xs px-2 py-0.5 rounded-full">In Stock</div>
+                        </div>
+                        <div class="mt-3 flex justify-between items-end">
+                            <div>
+                                <div class="text-2xl font-bold text-accentGold">KSh 2,800</div>
+                                <div class="text-xs text-gray-400 mt-1">Stock: <span class="text-green-400">8</span></div>
+                            </div>
+                            <div class="w-10 h-10 rounded-full bg-oceanBlue/50 flex items-center justify-center text-accentGold">
+                                <i class="fas fa-couch text-lg"></i>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="product-card rounded-xl p-4 flex flex-col justify-between cursor-pointer hover:border-accentGold/50" onclick="addToCart(3)">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <div class="font-bold text-white mb-1">Breakfast Buffet</div>
+                                <div class="text-xs text-blue-200">Dining</div>
+                            </div>
+                            <div class="bg-green-900/50 text-green-400 text-xs px-2 py-0.5 rounded-full">In Stock</div>
+                        </div>
+                        <div class="mt-3 flex justify-between items-end">
+                            <div>
+                                <div class="text-2xl font-bold text-accentGold">KSh 500</div>
+                                <div class="text-xs text-gray-400 mt-1">Stock: <span class="text-green-400">42</span></div>
+                            </div>
+                            <div class="w-10 h-10 rounded-full bg-oceanBlue/50 flex items-center justify-center text-accentGold">
+                                <i class="fas fa-utensils text-lg"></i>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="product-card rounded-xl p-4 flex flex-col justify-between cursor-pointer hover:border-accentGold/50" onclick="addToCart(4)">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <div class="font-bold text-white mb-1">Sunset Cruise</div>
+                                <div class="text-xs text-blue-200">Excursion</div>
+                            </div>
+                            <div class="bg-orange-900/50 text-orange-400 text-xs px-2 py-0.5 rounded-full">Low Stock</div>
+                        </div>
+                        <div class="mt-3 flex justify-between items-end">
+                            <div>
+                                <div class="text-2xl font-bold text-accentGold">KSh 2,500</div>
+                                <div class="text-xs text-gray-400 mt-1">Stock: <span class="text-orange-400">3</span></div>
+                            </div>
+                            <div class="w-10 h-10 rounded-full bg-oceanBlue/50 flex items-center justify-center text-accentGold">
+                                <i class="fas fa-ship text-lg"></i>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="product-card rounded-xl p-4 flex flex-col justify-between cursor-pointer hover:border-accentGold/50" onclick="addToCart(5)">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <div class="font-bold text-white mb-1">Dinner Buffet</div>
+                                <div class="text-xs text-blue-200">Dining</div>
+                            </div>
+                            <div class="bg-green-900/50 text-green-400 text-xs px-2 py-0.5 rounded-full">In Stock</div>
+                        </div>
+                        <div class="mt-3 flex justify-between items-end">
+                            <div>
+                                <div class="text-2xl font-bold text-accentGold">KSh 1,200</div>
+                                <div class="text-xs text-gray-400 mt-1">Stock: <span class="text-green-400">28</span></div>
+                            </div>
+                            <div class="w-10 h-10 rounded-full bg-oceanBlue/50 flex items-center justify-center text-accentGold">
+                                <i class="fas fa-wine-glass text-lg"></i>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="product-card rounded-xl p-4 flex flex-col justify-between cursor-pointer hover:border-accentGold/50" onclick="addToCart(6)">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <div class="font-bold text-white mb-1">Cave Exploration</div>
+                                <div class="text-xs text-blue-200">Excursion</div>
+                            </div>
+                            <div class="bg-green-900/50 text-green-400 text-xs px-2 py-0.5 rounded-full">In Stock</div>
+                        </div>
+                        <div class="mt-3 flex justify-between items-end">
+                            <div>
+                                <div class="text-2xl font-bold text-accentGold">KSh 800</div>
+                                <div class="text-xs text-gray-400 mt-1">Stock: <span class="text-green-400">15</span></div>
+                            </div>
+                            <div class="w-10 h-10 rounded-full bg-oceanBlue/50 flex items-center justify-center text-accentGold">
+                                <i class="fas fa-mountain text-lg"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIEW 2: INVENTORY & REPORTS -->
+            <div id="view-inventory" class="h-full hidden fade-in">
+                <div class="p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl font-bold text-white">Inventory Management</h2>
+                        <button class="bg-accentGold hover:bg-yellow-600 text-deepBlue px-5 py-2 rounded-lg font-bold flex items-center">
+                            <i class="fas fa-plus mr-2"></i> Add New Item
+                        </button>
+                    </div>
+
+                    <!-- Inventory Stats -->
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                        <div class="dashboard-card rounded-xl p-5">
+                            <div class="text-gray-400 text-sm mb-2">Total Items</div>
+                            <div class="text-3xl font-bold text-accentGold">128</div>
+                            <div class="mt-2 text-green-400 flex items-center text-sm">
+                                <i class="fas fa-arrow-up mr-1"></i> 12 new items this week
+                            </div>
+                        </div>
+                        <div class="dashboard-card rounded-xl p-5">
+                            <div class="text-gray-400 text-sm mb-2">Low Stock Items</div>
+                            <div class="text-3xl font-bold text-orange-400">7</div>
+                            <div class="mt-2 text-gray-400 flex items-center text-sm">
+                                <i class="fas fa-exclamation-triangle mr-1 text-orange-400"></i> Requires attention
+                            </div>
+                        </div>
+                        <div class="dashboard-card rounded-xl p-5">
+                            <div class="text-gray-400 text-sm mb-2">Out of Stock</div>
+                            <div class="text-3xl font-bold text-red-400">3</div>
+                            <div class="mt-2 text-gray-400 flex items-center text-sm">
+                                <i class="fas fa-box-open mr-1"></i> Reorder needed
+                            </div>
+                        </div>
+                        <div class="dashboard-card rounded-xl p-5">
+                            <div class="text-gray-400 text-sm mb-2">Total Value</div>
+                            <div class="text-3xl font-bold text-accentGold">KSh 3,850,000</div>
+                            <div class="mt-2 text-blue-400 flex items-center text-sm">
+                                <i class="fas fa-chart-line mr-1"></i> +4.2% from last month
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Inventory Table -->
+                    <div class="dashboard-card rounded-xl overflow-hidden">
+                        <div class="p-4 border-b border-blue-900/50 flex justify-between items-center">
+                            <div class="relative w-1/3">
+                                <input type="text" placeholder="Search inventory..." class="w-full bg-darkGray border border-blue-900/50 rounded-lg py-2 px-4 pl-10 text-white placeholder-gray-400">
+                                <i class="fas fa-search absolute left-3 top-2.5 text-gray-400"></i>
+                            </div>
+                            <div class="flex gap-3">
+                                <select class="bg-darkGray border border-blue-900/50 rounded-lg py-2 px-4 text-white">
+                                    <option>All Categories</option>
+                                    <option>Accommodation</option>
+                                    <option>Food & Beverage</option>
+                                    <option>Excursions</option>
+                                    <option>Merchandise</option>
+                                </select>
+                                <button class="bg-oceanBlue hover:bg-deepBlue px-4 py-2 rounded-lg flex items-center">
+                                    <i class="fas fa-download mr-2"></i> Export
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="overflow-x-auto">
+                            <table class="w-full">
+                                <thead class="bg-oceanBlue text-white">
+                                    <tr>
+                                        <th class="text-left p-4 font-bold">Item</th>
+                                        <th class="text-left p-4 font-bold">Category</th>
+                                        <th class="text-left p-4 font-bold">Price</th>
+                                        <th class="text-left p-4 font-bold">Stock</th>
+                                        <th class="text-left p-4 font-bold">Status</th>
+                                        <th class="text-right p-4 font-bold">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="border-b border-blue-900/30 hover:bg-oceanBlue/20">
+                                        <td class="p-4">
+                                            <div class="font-bold text-white">Standard Room</div>
+                                            <div class="text-xs text-blue-200">ID: ACC-1001</div>
+                                        </td>
+                                        <td class="p-4">Accommodation</td>
+                                        <td class="p-4 text-accentGold font-bold">KSh 1,500</td>
+                                        <td class="p-4">12</td>
+                                        <td class="p-4">
+                                            <span class="bg-green-900/50 text-green-400 px-3 py-1 rounded-full text-sm">In Stock</span>
+                                        </td>
+                                        <td class="p-4 text-right">
+                                            <div class="flex justify-end gap-2">
+                                                <button class="w-8 h-8 rounded-full bg-darkGray hover:bg-gray-700 flex items-center justify-center text-blue-300">
+                                                    <i class="fas fa-edit"></i>
+                                                </button>
+                                                <button class="w-8 h-8 rounded-full bg-darkGray hover:bg-gray-700 flex items-center justify-center text-green-400">
+                                                    <i class="fas fa-plus"></i>
+                                                </button>
+                                                <button class="w-8 h-8 rounded-full bg-darkGray hover:bg-gray-700 flex items-center justify-center text-red-400">
+                                                    <i class="fas fa-minus"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr class="border-b border-blue-900/30 hover:bg-oceanBlue/20">
+                                        <td class="p-4">
+                                            <div class="font-bold text-white">Sunset Cruise</div>
+                                            <div class="text-xs text-blue-200">ID: EXC-2005</div>
+                                        </td>
+                                        <td class="p-4">Excursion</td>
+                                        <td class="p-4 text-accentGold font-bold">KSh 2,500</td>
+                                        <td class="p-4">3</td>
+                                        <td class="p-4">
+                                            <span class="bg-orange-900/50 text-orange-400 px-3 py-1 rounded-full text-sm">Low Stock</span>
+                                        </td>
+                                        <td class="p-4 text-right">
+                                            <div class="flex justify-end gap-2">
+                                                <button class="w-8 h-8 rounded-full bg-darkGray hover:bg-gray-700 flex items-center justify-center text-blue-300">
+                                                    <i class="fas fa-edit"></i>
+                                                </button>
+                                                <button class="w-8 h-8 rounded-full bg-darkGray hover:bg-gray-700 flex items-center justify-center text-green-400">
+                                                    <i class="fas fa-plus"></i>
+                                                </button>
+                                                <button class="w-8 h-8 rounded-full bg-darkGray hover:bg-gray-700 flex items-center justify-center text-red-400">
+                                                    <i class="fas fa-minus"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr class="border-b border-blue-900/30 hover:bg-oceanBlue/20">
+                                        <td class="p-4">
+                                            <div class="font-bold text-white">Premium Coffee</div>
+                                            <div class="text-xs text-blue-200">ID: FNB-3012</div>
+                                        </td>
+                                        <td class="p-4">Food & Beverage</td>
+                                        <td class="p-4 text-accentGold font-bold">KSh 350</td>
+                                        <td class="p-4">0</td>
+                                        <td class="p-4">
+                                            <span class="bg-red-900/50 text-red-400 px-3 py-1 rounded-full text-sm">Out of Stock</span>
+                                        </td>
+                                        <td class="p-4 text-right">
+                                            <div class="flex justify-end gap-2">
+                                                <button class="w-8 h-8 rounded-full bg-darkGray hover:bg-gray-700 flex items-center justify-center text-blue-300">
+                                                    <i class="fas fa-edit"></i>
+                                                </button>
+                                                <button class="w-8 h-8 rounded-full bg-darkGray hover:bg-gray-700 flex items-center justify-center text-green-400">
+                                                    <i class="fas fa-plus"></i>
+                                                </button>
+                                                <button class="w-8 h-8 rounded-full bg-darkGray hover:bg-gray-700 flex items-center justify-center text-red-400">
+                                                    <i class="fas fa-minus"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <!-- More rows would be here -->
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <div class="p-4 border-t border-blue-900/50 flex justify-between items-center">
+                            <div class="text-gray-400">Showing 1 to 10 of 128 entries</div>
+                            <div class="flex gap-2">
+                                <button class="px-4 py-2 bg-darkGray rounded-lg text-gray-400">Previous</button>
+                                <button class="px-4 py-2 bg-accentGold text-deepBlue rounded-lg font-bold">1</button>
+                                <button class="px-4 py-2 bg-darkGray rounded-lg text-gray-400">2</button>
+                                <button class="px-4 py-2 bg-darkGray rounded-lg text-gray-400">3</button>
+                                <button class="px-4 py-2 bg-darkGray rounded-lg text-gray-400">Next</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIEW 3: ANALYTICS -->
+            <div id="view-analytics" class="h-full hidden fade-in">
+                <div class="p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl font-bold text-white">Business Analytics</h2>
+                        <div class="flex gap-3">
+                            <select class="bg-darkGray border border-blue-900/50 rounded-lg py-2 px-4 text-white">
+                                <option>Today</option>
+                                <option selected>This Week</option>
+                                <option>This Month</option>
+                                <option>This Quarter</option>
+                                <option>This Year</option>
+                            </select>
+                            <button class="bg-oceanBlue hover:bg-deepBlue px-4 py-2 rounded-lg flex items-center">
+                                <i class="fas fa-download mr-2"></i> Export Report
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Analytics Dashboard -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                        <!-- Sales Chart -->
+                        <div class="dashboard-card rounded-xl p-6">
+                            <div class="flex justify-between items-center mb-4">
+                                <h3 class="text-lg font-bold text-white">Sales Performance</h3>
+                                <div class="text-sm bg-green-900/30 text-green-400 px-3 py-1 rounded-full">+12.4% vs last period</div>
+                            </div>
+                            <div class="h-80">
+                                <canvas id="salesChart"></canvas>
+                            </div>
+                            <div class="mt-4 grid grid-cols-3 text-center">
+                                <div>
+                                    <div class="text-2xl font-bold text-accentGold">KSh 182,450</div>
+                                    <div class="text-xs text-gray-400">Total Sales</div>
+                                </div>
+                                <div>
+                                    <div class="text-2xl font-bold text-white">87</div>
+                                    <div class="text-xs text-gray-400">Transactions</div>
+                                </div>
+                                <div>
+                                    <div class="text-2xl font-bold text-green-400">KSh 2,350</div>
+                                    <div class="text-xs text-gray-400">Avg. Transaction</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Category Performance -->
+                        <div class="dashboard-card rounded-xl p-6">
+                            <div class="flex justify-between items-center mb-4">
+                                <h3 class="text-lg font-bold text-white">Category Performance</h3>
+                                <div class="flex gap-2">
+                                    <button class="w-6 h-6 rounded-full bg-darkGray flex items-center justify-center text-gray-400 hover:bg-gray-700">
+                                        <i class="fas fa-sync-alt"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="h-80">
+                                <canvas id="categoryChart"></canvas>
+                            </div>
+                            <div class="mt-4 text-center">
+                                <div class="inline-block bg-oceanBlue/30 text-blue-300 px-4 py-2 rounded-lg text-sm">
+                                    Food & Beverage contributes 42% of total revenue
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- KPI Cards -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                        <div class="dashboard-card rounded-xl p-5">
+                            <div class="flex items-start justify-between">
+                                <div>
+                                    <div class="text-gray-400 text-sm mb-1">Top Selling Item</div>
+                                    <div class="text-xl font-bold text-white">Standard Room</div>
+                                    <div class="text-accentGold font-bold mt-1">32 bookings</div>
+                                </div>
+                                <div class="w-12 h-12 rounded-full bg-gradient-to-br from-yellow-500 to-yellow-700 flex items-center justify-center text-deepBlue">
+                                    <i class="fas fa-trophy text-xl"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="dashboard-card rounded-xl p-5">
+                            <div class="flex items-start justify-between">
+                                <div>
+                                    <div class="text-gray-400 text-sm mb-1">Peak Sales Hour</div>
+                                    <div class="text-xl font-bold text-white">6:00 PM - 8:00 PM</div>
+                                    <div class="text-accentGold font-bold mt-1">28% of daily sales</div>
+                                </div>
+                                <div class="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-purple-700 flex items-center justify-center text-white">
+                                    <i class="fas fa-clock text-xl"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="dashboard-card rounded-xl p-5">
+                            <div class="flex items-start justify-between">
+                                <div>
+                                    <div class="text-gray-400 text-sm mb-1">Customer Growth</div>
+                                    <div class="text-xl font-bold text-white">+18% MoM</div>
+                                    <div class="text-green-400 font-bold mt-1">1,245 new customers</div>
+                                </div>
+                                <div class="w-12 h-12 rounded-full bg-gradient-to-br from-green-500 to-green-700 flex items-center justify-center text-white">
+                                    <i class="fas fa-users text-xl"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="dashboard-card rounded-xl p-5">
+                            <div class="flex items-start justify-between">
+                                <div>
+                                    <div class="text-gray-400 text-sm mb-1">Profit Margin</div>
+                                    <div class="text-xl font-bold text-white">38.6%</div>
+                                    <div class="text-blue-400 font-bold mt-1">+2.3% from last month</div>
+                                </div>
+                                <div class="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center text-white">
+                                    <i class="fas fa-chart-pie text-xl"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Staff Performance -->
+                    <div class="dashboard-card rounded-xl p-6">
+                        <div class="flex justify-between items-center mb-5">
+                            <h3 class="text-lg font-bold text-white">Staff Performance</h3>
+                            <button class="text-accentGold hover:text-yellow-300 text-sm font-medium">View Full Report →</button>
+                        </div>
+                        
+                        <div class="overflow-x-auto">
+                            <table class="w-full">
+                                <thead class="bg-oceanBlue text-white">
+                                    <tr>
+                                        <th class="text-left p-3 font-bold">Staff Member</th>
+                                        <th class="text-left p-3 font-bold">Role</th>
+                                        <th class="text-center p-3 font-bold">Sales</th>
+                                        <th class="text-center p-3 font-bold">Transactions</th>
+                                        <th class="text-center p-3 font-bold">Avg. Rating</th>
+                                        <th class="text-right p-3 font-bold">Performance</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="border-b border-blue-900/30">
+                                        <td class="p-3">
+                                            <div class="flex items-center">
+                                                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-yellow-400 to-yellow-600 flex items-center justify-center text-deepBlue font-bold mr-3">VO</div>
+                                                <div>
+                                                    <div class="font-bold text-white">Victor Olal</div>
+                                                    <div class="text-xs text-blue-200">Manager</div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="p-3">Manager</td>
+                                        <td class="p-3 text-center text-accentGold font-bold">KSh 84,500</td>
+                                        <td class="p-3 text-center">42</td>
+                                        <td class="p-3 text-center">
+                                            <div class="flex justify-center text-amber-400">
+                                                <i class="fas fa-star"></i>
+                                                <i class="fas fa-star"></i>
+                                                <i class="fas fa-star"></i>
+                                                <i class="fas fa-star"></i>
+                                                <i class="fas fa-star-half-alt"></i>
+                                                <span class="ml-1 text-gray-400">4.8</span>
+                                            </div>
+                                        </td>
+                                        <td class="p-3 text-right">
+                                            <div class="h-2 w-24 bg-gray-700 rounded-full overflow-hidden">
+                                                <div class="h-full bg-green-500" style="width: 92%"></div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr class="border-b border-blue-900/30">
+                                        <td class="p-3">
+                                            <div class="flex items-center">
+                                                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white font-bold mr-3">JM</div>
+                                                <div>
+                                                    <div class="font-bold text-white">Jane Mwangi</div>
+                                                    <div class="text-xs text-blue-200">Cashier</div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="p-3">Cashier</td>
+                                        <td class="p-3 text-center text-accentGold font-bold">KSh 62,300</td>
+                                        <td class="p-3 text-center">38</td>
+                                        <td class="p-3 text-center">
+                                            <div class="flex justify-center text-amber-400">
+                                                <i class="fas fa-star"></i>
+                                                <i class="fas fa-star"></i>
+                                                <i class="fas fa-star"></i>
+                                                <i class="fas fa-star"></i>
+                                                <i class="far fa-star"></i>
+                                                <span class="ml-1 text-gray-400">4.2</span>
+                                            </div>
+                                        </td>
+                                        <td class="p-3 text-right">
+                                            <div class="h-2 w-24 bg-gray-700 rounded-full overflow-hidden">
+                                                <div class="h-full bg-green-400" style="width: 85%"></div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr class="border-b border-blue-900/30">
+                                        <td class="p-3">
+                                            <div class="flex items-center">
+                                                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center text-white font-bold mr-3">DK</div>
+                                                <div>
+                                                    <div class="font-bold text-white">David Kiprono</div>
+                                                    <div class="text-xs text-blue-200">Waiter</div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="p-3">Waiter</td>
+                                        <td class="p-3 text-center text-accentGold font-bold">KSh 45,750</td>
+                                        <td class="p-3 text-center">29</td>
+                                        <td class="p-3 text-center">
+                                            <div class="flex justify-center text-amber-400">
+                                                <i class="fas fa-star"></i>
+                                                <i class="fas fa-star"></i>
+                                                <i class="fas fa-star"></i>
+                                                <i class="fas fa-star"></i>
+                                                <i class="fas fa-star"></i>
+                                                <span class="ml-1 text-gray-400">5.0</span>
+                                            </div>
+                                        </td>
+                                        <td class="p-3 text-right">
+                                            <div class="h-2 w-24 bg-gray-700 rounded-full overflow-hidden">
+                                                <div class="h-full bg-green-600" style="width: 98%"></div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIEW 4: HISTORY -->
+            <div id="view-history" class="h-full hidden fade-in">
+                <div class="p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl font-bold text-white">Transaction History</h2>
+                        <div class="flex gap-3">
+                            <div class="relative">
+                                <input type="date" class="bg-darkGray border border-blue-900/50 rounded-lg py-2 px-4 text-white">
+                            </div>
+                            <button class="bg-oceanBlue hover:bg-deepBlue px-4 py-2 rounded-lg flex items-center">
+                                <i class="fas fa-file-export mr-2"></i> Export Data
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Transaction Filters -->
+                    <div class="flex flex-wrap gap-3 mb-6">
+                        <select class="bg-darkGray border border-blue-900/50 rounded-lg py-2 px-4 text-white">
+                            <option>All Transactions</option>
+                            <option>Sales</option>
+                            <option>Refunds</option>
+                            <option>Voided</option>
+                        </select>
+                        <select class="bg-darkGray border border-blue-900/50 rounded-lg py-2 px-4 text-white">
+                            <option>All Payment Methods</option>
+                            <option>Cash</option>
+                            <option>M-Pesa</option>
+                            <option>Card</option>
+                            <option>Wallet</option>
+                        </select>
+                        <div class="relative flex-1 max-w-md">
+                            <input type="text" placeholder="Search transactions, customers or staff..." class="w-full bg-darkGray border border-blue-900/50 rounded-lg py-2 px-4 pl-10 text-white placeholder-gray-400">
+                            <i class="fas fa-search absolute left-3 top-2.5 text-gray-400"></i>
+                        </div>
+                        <button class="bg-red-700 hover:bg-red-800 text-white px-4 py-2 rounded-lg flex items-center">
+                            <i class="fas fa-eraser mr-2"></i> Clear Filters
+                        </button>
+                    </div>
+
+                    <!-- Transactions Table -->
+                    <div class="dashboard-card rounded-xl overflow-hidden">
+                        <div class="overflow-x-auto">
+                            <table class="w-full">
+                                <thead class="bg-oceanBlue text-white">
+                                    <tr>
+                                        <th class="text-left p-4 font-bold">Transaction ID</th>
+                                        <th class="text-left p-4 font-bold">Date & Time</th>
+                                        <th class="text-left p-4 font-bold">Items</th>
+                                        <th class="text-left p-4 font-bold">Customer</th>
+                                        <th class="text-left p-4 font-bold">Staff</th>
+                                        <th class="text-left p-4 font-bold">Payment Method</th>
+                                        <th class="text-right p-4 font-bold">Amount</th>
+                                        <th class="text-center p-4 font-bold">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="border-b border-blue-900/30 hover:bg-oceanBlue/20">
+                                        <td class="p-4 font-mono font-bold text-accentGold">WB-89275</td>
+                                        <td class="p-4">26 Nov 2023<br><span class="text-sm text-gray-400">14:25:18</span></td>
+                                        <td class="p-4">
+                                            <div class="font-bold text-white">Standard Room (x1)</div>
+                                            <div class="text-sm text-blue-200">Breakfast Buffet (x2)</div>
+                                            <div class="text-xs text-gray-500 mt-1">3 items total</div>
+                                        </td>
+                                        <td class="p-4">
+                                            <div class="font-bold text-white">John Mwangi</div>
+                                            <div class="text-sm text-blue-200">+254712345678</div>
+                                        </td>
+                                        <td class="p-4">
+                                            <div class="flex items-center">
+                                                <div class="w-8 h-8 rounded-full bg-gradient-to-br from-yellow-400 to-yellow-600 flex items-center justify-center text-deepBlue font-bold mr-2 text-xs">VO</div>
+                                                <span class="text-sm">Victor Olal</span>
+                                            </div>
+                                        </td>
+                                        <td class="p-4">
+                                            <span class="bg-green-900/50 text-green-400 px-3 py-1 rounded-full text-sm flex items-center">
+                                                <i class="fas fa-money-bill-wave mr-1"></i> Cash
+                                            </span>
+                                        </td>
+                                        <td class="p-4 text-right font-bold text-2xl text-accentGold">KSh 2,500</td>
+                                        <td class="p-4 text-center">
+                                            <div class="flex justify-center gap-2">
+                                                <button class="w-10 h-10 rounded-full bg-darkGray hover:bg-gray-700 flex items-center justify-center text-blue-300" onclick="printReceipt('WB-89275')">
+                                                    <i class="fas fa-print"></i>
+                                                </button>
+                                                <button class="w-10 h-10 rounded-full bg-darkGray hover:bg-gray-700 flex items-center justify-center text-green-400">
+                                                    <i class="fas fa-whatsapp"></i>
+                                                </button>
+                                                <button class="w-10 h-10 rounded-full bg-darkGray hover:bg-gray-700 flex items-center justify-center text-purple-400">
+                                                    <i class="fas fa-eye"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr class="border-b border-blue-900/30 hover:bg-oceanBlue/20">
+                                        <td class="p-4 font-mono font-bold text-accentGold">WB-89274</td>
+                                        <td class="p-4">26 Nov 2023<br><span class="text-sm text-gray-400">13:48:05</span></td>
+                                        <td class="p-4">
+                                            <div class="font-bold text-white">Sunset Cruise (x1)</div>
+                                            <div class="text-sm text-blue-200">Premium Coffee (x2)</div>
+                                            <div class="text-xs text-gray-500 mt-1">3 items total</div>
+                                        </td>
+                                        <td class="p-4">
+                                            <div class="font-bold text-white">Sarah Kimani</div>
+                                            <div class="text-sm text-blue-200">+254723456789</div>
+                                        </td>
+                                        <td class="p-4">
+                                            <div class="flex items-center">
+                                                <div class="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white font-bold mr-2 text-xs">JM</div>
+                                                <span class="text-sm">Jane Mwangi</span>
+                                            </div>
+                                        </td>
+                                        <td class="p-4">
+                                            <span class="bg-blue-900/50 text-blue-400 px-3 py-1 rounded-full text-sm flex items-center">
+                                                <i class="fas fa-mobile-alt mr-1"></i> M-Pesa
+                                            </span>
+                                        </td>
+                                        <td class="p-4 text-right font-bold text-2xl text-accentGold">KSh 3,200</td>
+                                        <td class="p-4 text-center">
+                                            <div class="flex justify-center gap-2">
+                                                <button class="w-10 h-10 rounded-full bg-darkGray hover:bg-gray-700 flex items-center justify-center text-blue-300" onclick="printReceipt('WB-89274')">
+                                                    <i class="fas fa-print"></i>
+                                                </button>
+                                                <button class="w-10 h-10 rounded-full bg-darkGray hover:bg-gray-700 flex items-center justify-center text-green-400">
+                                                    <i class="fas fa-whatsapp"></i>
+                                                </button>
+                                                <button class="w-10 h-10 rounded-full bg-darkGray hover:bg-gray-700 flex items-center justify-center text-purple-400">
+                                                    <i class="fas fa-eye"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr class="border-b border-blue-900/30 hover:bg-oceanBlue/20">
+                                        <td class="p-4 font-mono font-bold text-accentGold">WB-89273</td>
+                                        <td class="p-4">26 Nov 2023<br><span class="text-sm text-gray-400">12:15:33</span></td>
+                                        <td class="p-4">
+                                            <div class="font-bold text-white">Suite Room (x1)</div>
+                                            <div class="text-sm text-blue-200">Dinner Buffet (x2)</div>
+                                            <div class="text-xs text-gray-500 mt-1">3 items total</div>
+                                        </td>
+                                        <td class="p-4">
+                                            <div class="font-bold text-white">Michael Johnson</div>
+                                            <div class="text-sm text-blue-200">+254734567890</div>
+                                        </td>
+                                        <td class="p-4">
+                                            <div class="flex items-center">
+                                                <div class="w-8 h-8 rounded-full bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center text-white font-bold mr-2 text-xs">DK</div>
+                                                <span class="text-sm">David Kiprono</span>
+                                            </div>
+                                        </td>
+                                        <td class="p-4">
+                                            <span class="bg-amber-900/50 text-amber-400 px-3 py-1 rounded-full text-sm flex items-center">
+                                                <i class="fas fa-credit-card mr-1"></i> Card
+                                            </span>
+                                        </td>
+                                        <td class="p-4 text-right font-bold text-2xl text-accentGold">KSh 5,200</td>
+                                        <td class="p-4 text-center">
+                                            <div class="flex justify-center gap-2">
+                                                <button class="w-10 h-10 rounded-full bg-darkGray hover:bg-gray-700 flex items-center justify-center text-blue-300" onclick="printReceipt('WB-89273')">
+                                                    <i class="fas fa-print"></i>
+                                                </button>
+                                                <button class="w-10 h-10 rounded-full bg-darkGray hover:bg-gray-700 flex items-center justify-center text-green-400">
+                                                    <i class="fas fa-whatsapp"></i>
+                                                </button>
+                                                <button class="w-10 h-10 rounded-full bg-darkGray hover:bg-gray-700 flex items-center justify-center text-purple-400">
+                                                    <i class="fas fa-eye"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <!-- More transactions would be here -->
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <div class="p-4 border-t border-blue-900/50 flex justify-between items-center">
+                            <div class="text-gray-400">Showing 1 to 10 of 243 transactions</div>
+                            <div class="flex gap-2">
+                                <button class="px-4 py-2 bg-darkGray rounded-lg text-gray-400">Previous</button>
+                                <button class="px-4 py-2 bg-accentGold text-deepBlue rounded-lg font-bold">1</button>
+                                <button class="px-4 py-2 bg-darkGray rounded-lg text-gray-400">2</button>
+                                <button class="px-4 py-2 bg-darkGray rounded-lg text-gray-400">3</button>
+                                <button class="px-4 py-2 bg-darkGray rounded-lg text-gray-400">Next</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- FLOATING CART BAR -->
+    <div id="mobile-cart-bar" onclick="openCartModal()" class="fixed bottom-24 right-6 bg-deepBlue text-white p-4 rounded-2xl shadow-2xl flex items-center gap-4 transform translate-y-24 transition-transform duration-300 z-40 cursor-pointer glow-effect">
+        <div class="bg-accentGold text-deepBlue w-10 h-10 rounded-xl flex items-center justify-center font-bold text-lg shadow-lg" id="cart-count-float">3</div>
+        <div class="flex flex-col">
+            <span class="text-sm font-medium">Current Order</span>
+            <span class="text-lg font-bold" id="cart-total-float">KSh 4,800</span>
+        </div>
+        <div class="ml-2">
+            <i class="fas fa-shopping-cart text-xl"></i>
+        </div>
+    </div>
+
+    <!-- BOTTOM NAVIGATION (Mobile) -->
+    <nav class="bg-darkGray border-t border-blue-900/50 h-16 flex justify-around items-center shrink-0 z-50 md:hidden">
+        <button onclick="switchView('register')" class="nav-btn text-accentGold flex flex-col items-center gap-1 w-full h-full justify-center active:bg-gray-800">
+            <i class="fas fa-cash-register text-xl"></i>
+            <span class="text-[10px] font-bold">Sale</span>
+        </button>
+        <button onclick="switchView('inventory')" class="nav-btn text-gray-400 flex flex-col items-center gap-1 w-full h-full justify-center active:bg-gray-800">
+            <i class="fas fa-boxes text-xl"></i>
+            <span class="text-[10px] font-bold">Stock</span>
+        </button>
+        <button onclick="openCartModal()" class="nav-btn text-white flex flex-col items-center gap-1 w-full h-full justify-center active:bg-accentGold bg-gradient-to-br from-yellow-500 to-yellow-700 relative z-10">
+            <div class="absolute -top-3 -right-3 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center text-white text-xs font-bold">3</div>
+            <i class="fas fa-shopping-cart text-xl"></i>
+            <span class="text-[10px] font-bold">Cart</span>
+        </button>
+        <button onclick="switchView('analytics')" class="nav-btn text-gray-400 flex flex-col items-center gap-1 w-full h-full justify-center active:bg-gray-800">
+            <i class="fas fa-chart-bar text-xl"></i>
+            <span class="text-[10px] font-bold">Reports</span>
+        </button>
+        <button onclick="switchView('history')" class="nav-btn text-gray-400 flex flex-col items-center gap-1 w-full h-full justify-center active:bg-gray-800">
+            <i class="fas fa-history text-xl"></i>
+            <span class="text-[10px] font-bold">History</span>
+        </button>
+    </nav>
+
+    <!-- CART MODAL -->
+    <div id="cart-modal" class="modal hidden fixed inset-0 bg-black/70 backdrop-blur-sm z-[60] flex justify-end">
+        <div class="modal-content bg-darkGray w-full max-w-md h-full shadow-2xl flex flex-col border-l border-blue-800">
+            <div class="p-5 border-b border-blue-900/50 flex justify-between items-center">
+                <h3 class="font-bold text-xl text-white flex items-center">
+                    <i class="fas fa-shopping-cart mr-3 text-accentGold"></i>
+                    Current Order (3 Items)
+                </h3>
+                <button onclick="closeCartModal()" class="w-10 h-10 rounded-full bg-oceanBlue text-gray-300 flex items-center justify-center hover:bg-red-600 transition">
+                    <i class="fas fa-times text-lg"></i>
+                </button>
+            </div>
+            <div id="cart-items-container" class="flex-1 overflow-y-auto p-5 space-y-4">
+                <div class="flex justify-between items-start bg-oceanBlue/20 p-4 rounded-xl border border-blue-900/30">
+                    <div class="flex-1">
+                        <div class="font-bold text-white text-lg">Standard Room</div>
+                        <div class="text-blue-200 mt-1 flex items-center">
+                            <span class="text-accentGold font-bold">KSh 1,500</span>
+                            <span class="mx-2 text-gray-500">•</span>
+                            <span>Room #204</span>
+                        </div>
+                        <div class="text-xs text-gray-400 mt-2">Check-in: 26 Nov • Check-out: 28 Nov</div>
+                    </div>
+                    <div class="flex flex-col items-end ml-4">
+                        <button class="w-8 h-8 rounded-full bg-red-600/20 text-red-400 font-bold hover:bg-red-600/40 transition">-</button>
+                        <div class="font-bold text-lg my-1 text-accentGold">1</div>
+                        <button class="w-8 h-8 rounded-full bg-green-600/20 text-green-400 font-bold hover:bg-green-600/40 transition">+</button>
+                    </div>
+                </div>
+                
+                <div class="flex justify-between items-start bg-oceanBlue/20 p-4 rounded-xl border border-blue-900/30">
+                    <div class="flex-1">
+                        <div class="font-bold text-white text-lg">Breakfast Buffet</div>
+                        <div class="text-blue-200 mt-1">
+                            <span class="text-accentGold font-bold">KSh 500</span>
+                        </div>
+                    </div>
+                    <div class="flex flex-col items-end ml-4">
+                        <button class="w-8 h-8 rounded-full bg-red-600/20 text-red-400 font-bold hover:bg-red-600/40 transition">-</button>
+                        <div class="font-bold text-lg my-1 text-accentGold">2</div>
+                        <button class="w-8 h-8 rounded-full bg-green-600/20 text-green-400 font-bold hover:bg-green-600/40 transition">+</button>
+                    </div>
+                </div>
+                
+                <div class="flex justify-between items-start bg-oceanBlue/20 p-4 rounded-xl border border-blue-900/30">
+                    <div class="flex-1">
+                        <div class="font-bold text-white text-lg">Premium Coffee</div>
+                        <div class="text-blue-200 mt-1">
+                            <span class="text-accentGold font-bold">KSh 350</span>
+                        </div>
+                    </div>
+                    <div class="flex flex-col items-end ml-4">
+                        <button class="w-8 h-8 rounded-full bg-red-600/20 text-red-400 font-bold hover:bg-red-600/40 transition">-</button>
+                        <div class="font-bold text-lg my-1 text-accentGold">1</div>
+                        <button class="w-8 h-8 rounded-full bg-green-600/20 text-green-400 font-bold hover:bg-green-600/40 transition">+</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="p-6 bg-darkGray border-t border-blue-900/50">
+                <div class="space-y-4 mb-6">
+                    <div class="flex justify-between text-lg">
+                        <span class="text-gray-300">Subtotal:</span>
+                        <span class="font-bold text-white">KSh 2,850</span>
+                    </div>
+                    <div class="flex justify-between text-lg">
+                        <span class="text-gray-300">Discount (10%):</span>
+                        <span class="font-bold text-green-400">-KSh 285</span>
+                    </div>
+                    <div class="flex justify-between text-lg">
+                        <span class="text-gray-300">Tax (16%):</span>
+                        <span class="font-bold text-white">KSh 410</span>
+                    </div>
+                    <div class="flex justify-between pt-3 border-t border-blue-800">
+                        <span class="text-xl font-bold text-white">TOTAL:</span>
+                        <span class="text-2xl font-bold text-accentGold">KSh 2,975</span>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-3 mb-5">
+                    <button class="py-3 bg-oceanBlue hover:bg-deepBlue border border-blue-700 text-white rounded-lg text-sm font-bold uppercase transition">
+                        Apply Discount
+                    </button>
+                    <button class="py-3 bg-gray-800 hover:bg-gray-700 text-white rounded-lg text-sm font-bold uppercase transition">
+                        Add Customer
+                    </button>
+                </div>
+                
+                <div class="mb-5">
+                    <label class="block text-xs text-gray-400 mb-2">PAYMENT METHOD</label>
+                    <div class="grid grid-cols-2 gap-3">
+                        <button class="pay-method active py-3 border-2 border-accentGold bg-gradient-to-br from-yellow-600 to-yellow-800 text-deepBlue rounded-lg text-xs font-bold uppercase">
+                            <i class="fas fa-money-bill-wave mr-1"></i> Cash
+                        </button>
+                        <button class="pay-method py-3 border-2 border-blue-700 hover:border-blue-500 text-blue-300 rounded-lg text-xs font-bold uppercase">
+                            <i class="fas fa-mobile-alt mr-1"></i> M-Pesa
+                        </button>
+                    </div>
+                </div>
+                
+                <button class="w-full bg-accentGold hover:bg-yellow-600 text-deepBlue py-4 rounded-xl font-bold text-lg tracking-wider shadow-lg transition transform hover:scale-[1.02] active:scale-[0.98]">
+                    <i class="fas fa-check-circle mr-2"></i> Complete Sale & WhatsApp Receipt
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        // Initialize charts when document is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            // Sales Chart
+            const salesCtx = document.getElementById('salesChart').getContext('2d');
+            const salesChart = new Chart(salesCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                    datasets: [{
+                        label: 'Daily Sales (KSh)',
+                        data: [45000, 52000, 48500, 61200, 75800, 92400, 83600],
+                        borderColor: '#d4af37',
+                        backgroundColor: 'rgba(212, 175, 55, 0.1)',
+                        borderWidth: 3,
+                        pointBackgroundColor: '#0a192f',
+                        pointBorderColor: '#d4af37',
+                        pointBorderWidth: 2,
+                        pointRadius: 5,
+                        pointHoverRadius: 7,
+                        fill: true,
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                            backgroundColor: 'rgba(10, 25, 47, 0.9)',
+                            titleColor: '#d4af37',
+                            bodyColor: '#e2e8f0',
+                            borderColor: 'rgba(212, 175, 55, 0.5)',
+                            borderWidth: 1,
+                            callbacks: {
+                                label: function(context) {
+                                    return `KSh ${context.parsed.y.toLocaleString()}`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            grid: {
+                                color: 'rgba(100, 116, 139, 0.2)'
+                            },
+                            ticks: {
+                                color: '#94a3b8',
+                                callback: function(value) {
+                                    return 'KSh ' + value.toLocaleString();
+                                }
+                            }
+                        },
+                        x: {
+                            grid: {
+                                color: 'rgba(100, 116, 139, 0.1)'
+                            },
+                            ticks: {
+                                color: '#94a3b8'
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Category Chart
+            const categoryCtx = document.getElementById('categoryChart').getContext('2d');
+            const categoryChart = new Chart(categoryCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Accommodation', 'Food & Beverage', 'Excursions', 'Merchandise'],
+                    datasets: [{
+                        data: [42, 35, 18, 5],
+                        backgroundColor: [
+                            'rgba(59, 130, 246, 0.8)',
+                            'rgba(16, 185, 129, 0.8)',
+                            'rgba(245, 158, 11, 0.8)',
+                            'rgba(139, 92, 246, 0.8)'
+                        ],
+                        borderWidth: 0,
+                        hoverOffset: 15
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: '#e2e8f0',
+                                padding: 20,
+                                font: {
+                                    size: 11
+                                }
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(10, 25, 47, 0.9)',
+                            titleColor: '#d4af37',
+                            bodyColor: '#e2e8f0',
+                            borderColor: 'rgba(212, 175, 55, 0.5)',
+                            borderWidth: 1,
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.label}: ${context.parsed}%`;
+                                }
+                            }
+                        }
+                    },
+                    cutout: '65%'
+                }
+            });
+            
+            // Initialize clock
+            updateClock();
+            setInterval(updateClock, 1000);
+            
+            // Show cart if items exist
+            updateCartBar();
+        });
+        
+        function updateClock() {
+            const now = new Date();
+            document.getElementById('clock').innerHTML = `
+                <i class="fas fa-clock mr-2"></i> ${now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+            `;
+        }
+        
+        // Navigation Functions
+        function switchView(viewName) {
+            // Hide all views
+            ['register', 'inventory', 'analytics', 'history'].forEach(v => {
+                document.getElementById(`view-${v}`).classList.add('hidden');
+            });
+            
+            // Show selected view
+            document.getElementById(`view-${viewName}`).classList.remove('hidden');
+            
+            // Update mobile navigation active state
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('text-accentGold', 'bg-gradient-to-br', 'from-yellow-500', 'to-yellow-700');
+                btn.classList.add('text-gray-400');
+            });
+            
+            // Special handling for cart button
+            if (viewName === 'cart') {
+                document.querySelector('.nav-btn:nth-child(3)').classList.add('text-white', 'bg-gradient-to-br', 'from-yellow-500', 'to-yellow-700');
+                document.querySelector('.nav-btn:nth-child(3)').classList.remove('text-gray-400');
+            } else {
+                document.querySelector(`.nav-btn[onclick="switchView('${viewName}')"]`).classList.add('text-accentGold');
+                document.querySelector(`.nav-btn[onclick="switchView('${viewName}')"]`).classList.remove('text-gray-400');
+            }
+            
+            // Close menu on mobile
+            if (window.innerWidth < 768) {
+                document.getElementById('menu-toggle').click();
+            }
+        }
+        
+        // Cart Functions
+        let cart = [
+            {id: 1, name: "Standard Room", price: 1500, qty: 1, category: "accommodation"},
+            {id: 3, name: "Breakfast Buffet", price: 500, qty: 2, category: "food"},
+            {id: 7, name: "Premium Coffee", price: 350, qty: 1, category: "food"}
+        ];
+        
+        function updateCartBar() {
+            const total = cart.reduce((sum, i) => sum + (i.price * i.qty), 0);
+            const count = cart.reduce((sum, i) => sum + i.qty, 0);
+            
+            document.getElementById('cart-count-float').innerText = count;
+            document.getElementById('cart-total-float').innerText = `KSh ${total.toLocaleString()}`;
+            
+            const bar = document.getElementById('mobile-cart-bar');
+            if(count > 0) {
+                bar.classList.remove('translate-y-24');
+                bar.classList.add('glow-effect');
+            } else {
+                bar.classList.add('translate-y-24');
+                bar.classList.remove('glow-effect');
+            }
+        }
+        
+        function openCartModal() {
+            document.getElementById('cart-modal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+        
+        function closeCartModal() {
+            document.getElementById('cart-modal').classList.add('hidden');
+            document.body.style.overflow = 'auto';
+        }
+        
+        function addToCart(id) {
+            // In a real implementation, this would add the item to the cart
+            // For demo purposes, we'll just ensure the cart bar is visible
+            updateCartBar();
+            openCartModal();
+        }
+        
+        // Receipt Printing Function (Fixed Implementation)
+        function printReceipt(id) {
+            // Create a clean popup window for printing
+            const printWindow = window.open('', '_blank', 'width=400,height=600');
+            
+            // Generate receipt content
+            const receiptContent = `
+                <html>
+                <head>
+                    <title>WalkerBay Receipt</title>
+                    <style>
+                        body { 
+                            font-family: 'Courier New', monospace; 
+                            font-size: 14px; 
+                            margin: 20px; 
+                            color: #000; 
+                            line-height: 1.4;
+                        }
+                        .header { text-align: center; margin-bottom: 15px; border-bottom: 1px dashed #000; padding-bottom: 10px; }
+                        .hotel-name { font-size: 20px; font-weight: bold; color: #0a192f; }
+                        .contact { font-size: 12px; color: #555; margin-top: 3px; }
+                        .receipt-info { margin: 15px 0; }
+                        .divider { border-bottom: 1px dashed #000; margin: 10px 0; }
+                        table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+                        th, td { padding: 5px 0; text-align: left; }
+                        .total-row { font-weight: bold; border-top: 1px dashed #000; margin-top: 5px; }
+                        .footer { text-align: center; margin-top: 20px; font-size: 12px; color: #555; }
+                        .thank-you { font-weight: bold; color: #0a192f; margin: 5px 0; }
+                    </style>
+                </head>
+                <body>
+                    <div class="header">
+                        <div class="hotel-name">WALKERBAY HOTELS</div>
+                        <div class="contact">Muhuru Bay, Kenya</div>
+                        <div class="contact">Tel: +254 700 346 672 | walkerbay@example.com</div>
+                    </div>
+                    
+                    <div class="receipt-info">
+                        <div>Receipt No: ${id}</div>
+                        <div>Date: ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
+                        <div>Cashier: Victor Olal</div>
+                        <div>Terminal: POS-01 (Main Reception)</div>
+                    </div>
+                    
+                    <div class="divider"></div>
+                    
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Item</th>
+                                <th style="text-align: right;">Qty</th>
+                                <th style="text-align: right;">Price</th>
+                                <th style="text-align: right;">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Standard Room</td>
+                                <td style="text-align: right;">1</td>
+                                <td style="text-align: right;">1,500</td>
+                                <td style="text-align: right;">1,500</td>
+                            </tr>
+                            <tr>
+                                <td>Breakfast Buffet</td>
+                                <td style="text-align: right;">2</td>
+                                <td style="text-align: right;">500</td>
+                                <td style="text-align: right;">1,000</td>
+                            </tr>
+                            <tr>
+                                <td>Premium Coffee</td>
+                                <td style="text-align: right;">1</td>
+                                <td style="text-align: right;">350</td>
+                                <td style="text-align: right;">350</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    
+                    <div class="divider"></div>
+                    
+                    <table>
+                        <tr>
+                            <td>Subtotal:</td>
+                            <td style="text-align: right;">2,850</td>
+                        </tr>
+                        <tr>
+                            <td>Discount (10%):</td>
+                            <td style="text-align: right; color: green;">-285</td>
+                        </tr>
+                        <tr>
+                            <td>Tax (16%):</td>
+                            <td style="text-align: right;">410</td>
+                        </tr>
+                        <tr class="total-row">
+                            <td>TOTAL:</td>
+                            <td style="text-align: right; font-size: 18px; color: #0a192f;">2,975</td>
+                        </tr>
+                        <tr>
+                            <td>Payment Method:</td>
+                            <td style="text-align: right;">Cash</td>
+                        </tr>
+                    </table>
+                    
+                    <div class="divider"></div>
+                    
+                    <div class="footer">
+                        <div class="thank-you">Thank you for your stay!</div>
+                        <div>WalkerBay Hotels is committed to exceptional service</div>
+                        <div>www.walkerbay-hotels.co.ke</div>
+                        <div style="margin-top: 15px; font-style: italic;">"Where the sea meets serenity"</div>
+                    </div>
+                    
+                    <script>
+                        window.onload = function() {
+                            window.print();
+                            setTimeout(function() {
+                                window.close();
+                            }, 1000);
+                        }
+                    </script>
+                </body>
+                </html>
+            `;
+            
+            // Write content to the window and print
+            printWindow.document.write(receiptContent);
+            printWindow.document.close();
+        }
+        
+        // Category Filtering
+        function filterProducts(category) {
+            document.querySelectorAll('.category-badge').forEach(b => {
+                b.classList.remove('bg-accentGold', 'text-deepBlue');
+                b.classList.add('bg-oceanBlue', 'text-white');
+            });
+            event.target.classList.remove('bg-oceanBlue', 'text-white');
+            event.target.classList.add('bg-accentGold', 'text-deepBlue');
+            
+            // In a real implementation, this would filter the product grid
+            console.log(`Filtering products by category: ${category}`);
+        }
+        
+        // Menu toggle for mobile
+        document.getElementById('menu-toggle').addEventListener('click', function() {
+            const sidebar = document.querySelector('.sidebar');
+            const content = document.querySelector('.content-area');
+            
+            if (this.classList.contains('active')) {
+                this.classList.remove('active');
+                this.innerHTML = '<i class="fas fa-bars text-xl"></i>';
+                document.querySelector('.sidebar').classList.add('hidden');
+            } else {
+                this.classList.add('active');
+                this.innerHTML = '<i class="fas fa-times text-xl"></i>';
+                document.querySelector('.sidebar').classList.remove('hidden');
+            }
+        });
+    </script>
+</body>
+</html>
